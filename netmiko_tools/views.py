@@ -1,6 +1,6 @@
 import netmiko
 from django.contrib import messages
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 
 from .forms import CommandForm
 from .models import CommandHistory, NetworkDevice
@@ -52,5 +52,17 @@ def home(request):
     return render(
         request,
         "netmiko_tools/index.html",
-        {"devices": devices, "form": form, "command_history": command_history},
+        {"devices": devices, "form": form},
+    )
+
+
+def device_history(request, device_id):
+    device = get_object_or_404(NetworkDevice, pk=device_id)
+    command_history = CommandHistory.objects.filter(device=device).order_by(
+        "-executed_at"
+    )
+    return render(
+        request,
+        "netmiko_tools/device_history.html",
+        {"device": device, "command_history": command_history},
     )

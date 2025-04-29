@@ -1,0 +1,36 @@
+{% extends 'netmiko_tools/base.html' %}
+
+{% block content %}
+    <h1>Command History for {{ device.name }} ({{ device.ip_address }})</h1>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Command</th>
+                <th>Status</th>
+                <th>Output</th>
+                <th>Executed At</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for history in command_history %}
+            <tr>
+                <td>{{ history.command }}</td>
+                <td>
+                    <span class="badge {% if history.status == 'success' %}badge-success{% else %}badge-danger{% endif %}">
+                        {{ history.status }}
+                    </span>
+                </td>
+                <td><pre>{{ history.output }}</pre></td>
+                <td>{{ history.executed_at }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4">No command history available for this device.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{% url 'home' %}" class="btn btn-secondary">Back to Device List</a>
+{% endblock %}

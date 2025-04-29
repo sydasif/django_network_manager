@@ -22,6 +22,7 @@
                 <h4>{{ device.name }}</h4>
                 <p>IP: {{ device.ip_address }}</p>
                 <p>Type: {{ device.device_type }}</p>
+                <a href="{% url 'device_history' device_id=device.id %}" class="btn btn-info btn-sm">View History</a>
                 <form method="post" action="{% url 'home' %}">
                     {% csrf_token %}
                     <input type="hidden" name="device_id" value="{{ device.id }}">
@@ -38,26 +39,5 @@
         </div>
     </div>
 
-    <div class="col-md-6">
-        <h2>Recent Command History</h2>
-        {% if command_history %}
-            {% for history in command_history %}
-            <div class="card mb-3">
-                <div class="card-header">
-                    <strong>{{ history.command }}</strong>
-                    <span class="badge {% if history.status == 'success' %}badge-success{% else %}badge-danger{% endif %} float-right">
-                        {{ history.status }}
-                    </span>
-                </div>
-                <div class="card-body">
-                    <pre>{{ history.output }}</pre>
-                    <small class="text-muted">Executed at: {{ history.executed_at }}</small>
-                </div>
-            </div>
-            {% endfor %}
-        {% else %}
-        <p>No command history available.</p>
-        {% endif %}
-    </div>
 </div>
 {% endblock %}
