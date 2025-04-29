@@ -7,17 +7,14 @@ from .models import CommandHistory, NetworkDevice
 
 
 def home(request):
-    devices = NetworkDevice.objects.all()
     form = CommandForm()
-    command_history = CommandHistory.objects.all().order_by("-executed_at")[:5]
 
     if request.method == "POST":
         form = CommandForm(request.POST)
         if form.is_valid():
             command = form.cleaned_data["command"]
-            device_id = request.POST.get("device_id")
+            device = form.cleaned_data["device"]
             try:
-                device = NetworkDevice.objects.get(pk=device_id)
                 with netmiko.ConnectHandler(
                     device_type=device.device_type,
                     ip=device.ip_address,
@@ -52,7 +49,16 @@ def home(request):
     return render(
         request,
         "netmiko_tools/index.html",
-        {"devices": devices, "form": form},
+        {"form": form},
+    )
+
+
+def devices(request):
+    devices = NetworkDevice.objects.all()
+    return render(
+        request,
+        "netmiko_tools/devices.html",
+        {"devices": devices},
     )
 
 

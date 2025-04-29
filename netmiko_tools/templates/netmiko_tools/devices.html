@@ -1,0 +1,17 @@
+{% extends 'netmiko_tools/base.html' %}
+
+{% block content %}
+    <h1>Network Devices</h1>
+
+    <div class="list-group">
+        {% for device in devices %}
+        <a href="{% url 'device_history' device_id=device.id %}" class="list-group-item list-group-item-action">
+            {{ device.name }} ({{ device.ip_address }})
+        </a>
+        {% empty %}
+        <p>No devices configured yet.</p>
+        {% endfor %}
+    </div>
+
+    <a href="{% url 'home' %}" class="btn btn-secondary mt-3">Back to Home</a>
+{% endblock %}
