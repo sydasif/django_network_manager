@@ -1,1 +1,12 @@
+{% extends 'netmiko_tools/base.html' %}
+
+{% block content %}
 <h1>Welcome to Netmiko Tools!</h1>
+
+<h2>Network Devices</h2>
+<ul>
+    {% for device in devices %}
+    <li>{{ device.name }} - {{ device.ip_address }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}
