@@ -9,6 +9,7 @@ from .models import CommandHistory, NetworkDevice
 def home(request):
     devices = NetworkDevice.objects.all()
     form = CommandForm()
+    command_history = CommandHistory.objects.all().order_by("-executed_at")[:5]
 
     if request.method == "POST":
         form = CommandForm(request.POST)
@@ -51,5 +52,5 @@ def home(request):
     return render(
         request,
         "netmiko_tools/index.html",
-        {"devices": devices, "form": form},
+        {"devices": devices, "form": form, "command_history": command_history},
     )
