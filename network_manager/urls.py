@@ -16,11 +16,9 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.shortcuts import redirect
 from django.urls import include, path
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("tools/", include("netmiko_tools.urls")),
-    path("", lambda request: redirect("tools/"), name="home"),
+    path("", include("netmiko_tools.urls")),
 ]

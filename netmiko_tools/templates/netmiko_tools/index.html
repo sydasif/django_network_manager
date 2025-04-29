@@ -3,10 +3,59 @@
 {% block content %}
 <h1>Welcome to Netmiko Tools!</h1>
 
-<h2>Network Devices</h2>
-<ul>
-    {% for device in devices %}
-    <li>{{ device.name }} - {{ device.ip_address }}</li>
+{% if messages %}
+<div class="messages">
+    {% for message in messages %}
+    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+        {{ message }}
+    </div>
     {% endfor %}
-</ul>
+</div>
+{% endif %}
+
+<div class="row">
+    <div class="col-md-6">
+        <h2>Network Devices</h2>
+        <div class="list-group">
+            {% for device in devices %}
+            <div class="list-group-item">
+                <h4>{{ device.name }}</h4>
+                <p>IP: {{ device.ip_address }}</p>
+                <p>Type: {{ device.device_type }}</p>
+                <form method="post" action="{% url 'home' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="device_id" value="{{ device.id }}">
+                    <div class="form-group">
+                        {{ form.command.label_tag }}
+                        {{ form.command }}
+                    </div>
+                    <button type="submit" class="btn btn-primary">Execute Command</button>
+                </form>
+            </div>
+            {% empty %}
+            <p>No devices configured yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <h2>Recent Command History</h2>
+        {% for history in device.command_history.all|slice:":5" %}
+        <div class="card mb-3">
+            <div class="card-header">
+                <strong>{{ history.command }}</strong>
+                <span class="badge {% if history.status == 'success' %}badge-success{% else %}badge-danger{% endif %} float-right">
+                    {{ history.status }}
+                </span>
+            </div>
+            <div class="card-body">
+                <pre>{{ history.output }}</pre>
+                <small class="text-muted">Executed at: {{ history.executed_at }}</small>
+            </div>
+        </div>
+        {% empty %}
+        <p>No command history available.</p>
+        {% endfor %}
+    </div>
+</div>
 {% endblock %}
