@@ -8,6 +8,7 @@ from .models import CommandHistory, NetworkDevice
 
 def home(request):
     form = CommandForm()
+    latest_result = None
 
     if request.method == "POST":
         form = CommandForm(request.POST)
@@ -30,14 +31,14 @@ def home(request):
                         f"Command '{command}' executed successfully on {device.name}",
                     )
 
-                CommandHistory.objects.create(
+                history_object = CommandHistory.objects.create(
                     device=device,
                     command=command,
                     output=output,
                     status=status,
                     executed_by="admin",  # Replace with actual user if auth is implemented
                 )
-                latest_result = CommandHistory.objects.latest("executed_at")
+                request.session["latest_history_id"] = history_object.id
             except NetworkDevice.DoesNotExist:
                 messages.error(request, "Device not found.")
             except Exception as e:
@@ -45,13 +46,24 @@ def home(request):
                 output = str(e)
                 status = "failed"
                 latest_result = None
+                if "latest_history_id" in request.session:
+                    del request.session["latest_history_id"]
 
             return redirect("home")
+
+    if "latest_history_id" in request.session:
+        try:
+            latest_result = CommandHistory.objects.get(
+                id=request.session["latest_history_id"]
+            )
+        except CommandHistory.DoesNotExist:
+            latest_result = None
+        del request.session["latest_history_id"]
 
     return render(
         request,
         "netmiko_tools/index.html",
-        {"form": form, "latest_result": None},
+        {"form": form, "latest_result": latest_result},
     )
 
 
