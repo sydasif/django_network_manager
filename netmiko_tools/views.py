@@ -37,19 +37,21 @@ def home(request):
                     status=status,
                     executed_by="admin",  # Replace with actual user if auth is implemented
                 )
+                latest_result = CommandHistory.objects.latest("executed_at")
             except NetworkDevice.DoesNotExist:
                 messages.error(request, "Device not found.")
             except Exception as e:
                 messages.error(request, f"Error executing command: {e}")
                 output = str(e)
                 status = "failed"
+                latest_result = None
 
             return redirect("home")
 
     return render(
         request,
         "netmiko_tools/index.html",
-        {"form": form},
+        {"form": form, "latest_result": None},
     )
 
 
