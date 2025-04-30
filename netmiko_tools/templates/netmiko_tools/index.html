@@ -1,7 +1,7 @@
 {% extends 'netmiko_tools/base.html' %}
 
 {% block content %}
-The "Configuration Commands" mode now allows users to select multiple devices<div class="container py-4">
+<div class="container py-4">
     <h1 class="mb-4 text-primary">Network Command Center</h1>
 
     {% if messages %}
@@ -29,17 +29,14 @@ The "Configuration Commands" mode now allows users to select multiple devices<di
                     <label class="d-block font-weight-bold mb-2">Select Mode:</label>
                     <div class="btn-group btn-group-toggle" data-toggle="buttons">
                         {% for value, text in form.execution_type.field.choices %}
-                        <label class="btn btn-outline-primary {% if forloop.first %}active{% endif %}">
-                            <input type="radio" name="execution_type" value="{{ value }}" {% if forloop.first %}checked{% endif %}> {{ text }}
+                        <label class="btn btn-outline-primary {% if value == form.execution_type.field.initial %}active{% endif %}">
+                            <input type="radio" name="execution_type" value="{{ value }}" {% if value == form.execution_type.field.initial %}checked{% endif %}> {{ text }}
                         </label>
                         {% endfor %}
                     </div>
                 </div>
 
-                <div id="single-device-section" class="form-group">
-                    <label class="font-weight-bold">Device:</label>
-                    {{ form.single_device }}
-                </div>
+                <!-- Removed single-device-section -->
 
                 <div id="multiple-devices-section" class="form-group" style="display: none;">
                     <label class="font-weight-bold">Select Devices:</label>
@@ -53,7 +50,7 @@ The "Configuration Commands" mode now allows users to select multiple devices<di
                     <small class="form-text text-muted">Enter each command on a new line.</small>
                 </div>
 
-                <div class="form-group mt-4" id="command-section">
+                <div class="form-group mt-4" id="command-section" style="display: none;">
                     <label class="font-weight-bold">Command:</label>
                     {{ form.command }}
                 </div>
@@ -95,45 +92,34 @@ The "Configuration Commands" mode now allows users to select multiple devices<di
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const executionTypes = document.getElementsByName('execution_type');
-    const singleSection = document.getElementById('single-device-section');
+    // Removed singleSection reference
     const multipleSection = document.getElementById('multiple-devices-section');
     const configCommandsSection = document.getElementById('config-commands-section');
     const commandSection = document.querySelector('#command-section');
 
     function updateSections() {
         const selectedValue = document.querySelector('input[name="execution_type"]:checked').value;
-        if (selectedValue === 'single') {
-            singleSection.style.display = 'block';
-            multipleSection.style.display = 'none';
-            configCommandsSection.style.display = 'none';
-            commandSection.style.display = 'block';
-            document.querySelector('#id_single_device').required = true;
-            document.querySelector('#id_multiple_devices').required = false;
-            document.querySelector('#id_config_commands').required = false;
-        } else if (selectedValue === 'bulk') {
-            singleSection.style.display = 'none';
+
+        // Hide all optional sections initially
+        multipleSection.style.display = 'none';
+        configCommandsSection.style.display = 'none';
+        commandSection.style.display = 'none';
+        // Set all optional fields to not required initially
+        document.querySelector('#id_multiple_devices').required = false;
+        document.querySelector('#id_config_commands').required = false;
+        document.querySelector('#id_command').required = false;
+
+
+        if (selectedValue === 'show_cmd') {
             multipleSection.style.display = 'block';
-            configCommandsSection.style.display = 'none';
             commandSection.style.display = 'block';
-            document.querySelector('#id_single_device').required = false;
             document.querySelector('#id_multiple_devices').required = true;
-            document.querySelector('#id_config_commands').required = false;
-        } else if (selectedValue === 'config') {
-            singleSection.style.display = 'none';
+            document.querySelector('#id_command').required = true;
+        } else if (selectedValue === 'config_cmd') {
             multipleSection.style.display = 'block';
             configCommandsSection.style.display = 'block';
-            commandSection.style.display = 'none';
-            document.querySelector('#id_single_device').required = false;
             document.querySelector('#id_multiple_devices').required = true;
             document.querySelector('#id_config_commands').required = true;
-        } else {
-            singleSection.style.display = 'block';
-            multipleSection.style.display = 'none';
-            configCommandsSection.style.display = 'none';
-            commandSection.style.display = 'block';
-            document.querySelector('#id_single_device').required = true;
-            document.querySelector('#id_multiple_devices').required = false;
-            document.querySelector('#id_config_commands').required = false;
         }
     }
 
