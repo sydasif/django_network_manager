@@ -1,7 +1,7 @@
 {% extends 'netmiko_tools/base.html' %}
 
 {% block content %}
-<div class="container py-4">
+The "Configuration Commands" mode now allows users to select multiple devices<div class="container py-4">
     <h1 class="mb-4 text-primary">Network Command Center</h1>
 
     {% if messages %}
@@ -119,12 +119,12 @@ document.addEventListener('DOMContentLoaded', function() {
             document.querySelector('#id_multiple_devices').required = true;
             document.querySelector('#id_config_commands').required = false;
         } else if (selectedValue === 'config') {
-            singleSection.style.display = 'block';
-            multipleSection.style.display = 'none';
+            singleSection.style.display = 'none';
+            multipleSection.style.display = 'block';
             configCommandsSection.style.display = 'block';
             commandSection.style.display = 'none';
-            document.querySelector('#id_single_device').required = true;
-            document.querySelector('#id_multiple_devices').required = false;
+            document.querySelector('#id_single_device').required = false;
+            document.querySelector('#id_multiple_devices').required = true;
             document.querySelector('#id_config_commands').required = true;
         } else {
             singleSection.style.display = 'block';

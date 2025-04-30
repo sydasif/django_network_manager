@@ -83,15 +83,21 @@ def home(request):
                                 {"device": device, "status": status, "output": output}
                             )
             elif execution_type == "config":
-                device = form.cleaned_data["single_device"]
+                devices = form.cleaned_data["multiple_devices"]
                 config_commands = form.cleaned_data["config_commands"].splitlines()
-                if device:
-                    device, output, status = execute_config_commands_on_device(
-                        device, config_commands, request.user.username
-                    )
-                    results.append(
-                        {"device": device, "status": status, "output": output}
-                    )
+                if devices:
+                    with ThreadPoolExecutor(max_workers=10) as executor:
+                        for device in devices:
+                            future = executor.submit(
+                                execute_config_commands_on_device,
+                                device,
+                                config_commands,
+                                request.user.username,
+                            )
+                            device, output, status = future.result()
+                            results.append(
+                                {"device": device, "status": status, "output": output}
+                            )
 
             # Save command history for all results
             for result in results:
