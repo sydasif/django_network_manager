@@ -47,6 +47,12 @@
                     <small class="form-text text-muted">Hold Ctrl/Cmd to select multiple devices</small>
                 </div>
 
+                <div id="config-commands-section" class="form-group" style="display: none;">
+                    <label class="font-weight-bold">Configuration Commands:</label>
+                    {{ form.config_commands }}
+                    <small class="form-text text-muted">Enter each command on a new line.</small>
+                </div>
+
                 <div class="form-group mt-4">
                     <label class="font-weight-bold">Command:</label>
                     {{ form.command }}
@@ -91,19 +97,38 @@ document.addEventListener('DOMContentLoaded', function() {
     const executionTypes = document.getElementsByName('execution_type');
     const singleSection = document.getElementById('single-device-section');
     const multipleSection = document.getElementById('multiple-devices-section');
+    const configCommandsSection = document.getElementById('config-commands-section');
 
     function updateSections() {
         const selectedValue = document.querySelector('input[name="execution_type"]:checked').value;
         if (selectedValue === 'single') {
             singleSection.style.display = 'block';
             multipleSection.style.display = 'none';
+            configCommandsSection.style.display = 'none';
             document.querySelector('#id_single_device').required = true;
             document.querySelector('#id_multiple_devices').required = false;
-        } else {
+            document.querySelector('#id_config_commands').required = false;
+        } else if (selectedValue === 'bulk') {
             singleSection.style.display = 'none';
             multipleSection.style.display = 'block';
+            configCommandsSection.style.display = 'none';
             document.querySelector('#id_single_device').required = false;
             document.querySelector('#id_multiple_devices').required = true;
+            document.querySelector('#id_config_commands').required = false;
+        } else if (selectedValue === 'config') {
+            singleSection.style.display = 'block';
+            multipleSection.style.display = 'none';
+            configCommandsSection.style.display = 'block';
+            document.querySelector('#id_single_device').required = true;
+            document.querySelector('#id_multiple_devices').required = false;
+            document.querySelector('#id_config_commands').required = true;
+        } else {
+            singleSection.style.display = 'block';
+            multipleSection.style.display = 'none';
+            configCommandsSection.style.display = 'none';
+            document.querySelector('#id_single_device').required = true;
+            document.querySelector('#id_multiple_devices').required = false;
+            document.querySelector('#id_config_commands').required = false;
         }
     }
 

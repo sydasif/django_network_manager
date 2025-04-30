@@ -25,6 +25,25 @@ def execute_command_on_device(device, command, executed_by):
         return device, str(e), "failed"
 
 
+def execute_config_commands_on_device(device, config_commands, executed_by):
+    try:
+        with netmiko.ConnectHandler(
+            device_type=device.device_type,
+            ip=device.ip_address,
+            username=device.username,
+            password=device.password,
+            port=device.port,
+            secret=device.enable_password,
+        ) as net_connect:
+            net_connect.enable()
+            output = net_connect.send_config_set(config_commands)
+            output += net_connect.save_config()
+            status = "success"
+            return device, output, status
+    except Exception as e:
+        return device, str(e), "failed"
+
+
 def home(request):
     form = CommandForm()
     results = []
@@ -44,7 +63,7 @@ def home(request):
                     results.append(
                         {"device": device, "status": status, "output": output}
                     )
-            else:
+            elif execution_type == "bulk":
                 devices = form.cleaned_data["multiple_devices"]
                 if devices:
                     with ThreadPoolExecutor(max_workers=10) as executor:
@@ -63,6 +82,16 @@ def home(request):
                             results.append(
                                 {"device": device, "status": status, "output": output}
                             )
+            elif execution_type == "config":
+                device = form.cleaned_data["single_device"]
+                config_commands = form.cleaned_data["config_commands"].splitlines()
+                if device:
+                    device, output, status = execute_config_commands_on_device(
+                        device, config_commands, request.user.username
+                    )
+                    results.append(
+                        {"device": device, "status": status, "output": output}
+                    )
 
             # Save command history for all results
             for result in results:

@@ -4,7 +4,11 @@ from .models import NetworkDevice
 
 
 class CommandForm(forms.Form):
-    EXECUTION_TYPE = (("single", "Single Device"), ("bulk", "Multiple Devices"))
+    EXECUTION_TYPE = (
+        ("single", "Single Device"),
+        ("bulk", "Multiple Devices"),
+        ("config", "Configuration Commands"),
+    )
 
     execution_type = forms.ChoiceField(
         choices=EXECUTION_TYPE,
@@ -30,4 +34,10 @@ class CommandForm(forms.Form):
         label="Command",
         max_length=200,
         widget=forms.TextInput(attrs={"class": "form-control"}),
+    )
+
+    config_commands = forms.CharField(
+        label="Configuration Commands",
+        required=False,
+        widget=forms.Textarea(attrs={"class": "form-control", "rows": 5}),
     )
