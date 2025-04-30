@@ -1,45 +1,118 @@
 {% extends 'netmiko_tools/base.html' %}
 
 {% block content %}
-<h1>Welcome to Netmiko Tools!</h1>
+<div class="container py-4">
+    <h1 class="mb-4 text-primary">Network Command Center</h1>
 
-{% if messages %}
-<div class="messages">
-    {% for message in messages %}
-    <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
-        {{ message }}
-    </div>
-    {% endfor %}
-</div>
-{% endif %}
-
-<div class="row">
-    <div class="col-md-6">
-        <h2>Execute Command</h2>
-        <form method="post" action="{% url 'home' %}">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" class="btn btn-primary">Execute Command</button>
-        </form>
-    </div>
-    <div class="col-md-6">
-        <h2>Last Command Output</h2>
-        {% if latest_result %}
-        <div class="card mb-3">
-            <div class="card-header">
-                <strong>{{ latest_result.command }}</strong>
-                <span class="badge {% if latest_result.status == 'success' %}badge-success{% else %}badge-danger{% endif %} float-right">
-                    {{ latest_result.status }}
-                </span>
-            </div>
-            <div class="card-body">
-                <pre>{{ latest_result.output }}</pre>
-                <small class="text-muted">Executed at: {{ latest_result.executed_at }}</small>
-            </div>
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert">
+                <span>&times;</span>
+            </button>
         </div>
-        {% else %}
-        <p>Command output will appear here.</p>
-        {% endif %}
+        {% endfor %}
     </div>
+    {% endif %}
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Execute Command</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" action="{% url 'home' %}">
+                {% csrf_token %}
+
+                <div class="form-group mb-4">
+                    <label class="d-block font-weight-bold mb-2">Select Mode:</label>
+                    <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                        {% for value, text in form.execution_type.field.choices %}
+                        <label class="btn btn-outline-primary {% if forloop.first %}active{% endif %}">
+                            <input type="radio" name="execution_type" value="{{ value }}" {% if forloop.first %}checked{% endif %}> {{ text }}
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div id="single-device-section" class="form-group">
+                    <label class="font-weight-bold">Device:</label>
+                    {{ form.single_device }}
+                </div>
+
+                <div id="multiple-devices-section" class="form-group" style="display: none;">
+                    <label class="font-weight-bold">Select Devices:</label>
+                    {{ form.multiple_devices }}
+                    <small class="form-text text-muted">Hold Ctrl/Cmd to select multiple devices</small>
+                </div>
+
+                <div class="form-group mt-4">
+                    <label class="font-weight-bold">Command:</label>
+                    {{ form.command }}
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary btn-block py-2">Execute Command</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if results %}
+    <div class="mt-4">
+        <h4 class="mb-3">Results</h4>
+        <div class="accordion" id="resultsAccordion">
+            {% for result in results %}
+            <div class="card mb-2">
+                <div class="card-header {% if result.status == 'success' %}bg-success{% else %}bg-danger{% endif %} text-white">
+                    <div class="d-flex justify-content-between align-items-center"
+                         data-toggle="collapse"
+                         data-target="#collapse{{ forloop.counter }}"
+                         style="cursor: pointer;">
+                        <h6 class="mb-0">{{ result.device.name }} ({{ result.device.ip_address }})</h6>
+                        <span class="badge badge-light">{{ result.status }}</span>
+                    </div>
+                </div>
+                <div id="collapse{{ forloop.counter }}" class="collapse show" data-parent="#resultsAccordion">
+                    <div class="card-body bg-light">
+                        <pre class="mb-0">{{ result.output }}</pre>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const executionTypes = document.getElementsByName('execution_type');
+    const singleSection = document.getElementById('single-device-section');
+    const multipleSection = document.getElementById('multiple-devices-section');
+
+    function updateSections() {
+        const selectedValue = document.querySelector('input[name="execution_type"]:checked').value;
+        if (selectedValue === 'single') {
+            singleSection.style.display = 'block';
+            multipleSection.style.display = 'none';
+            document.querySelector('#id_single_device').required = true;
+            document.querySelector('#id_multiple_devices').required = false;
+        } else {
+            singleSection.style.display = 'none';
+            multipleSection.style.display = 'block';
+            document.querySelector('#id_single_device').required = false;
+            document.querySelector('#id_multiple_devices').required = true;
+        }
+    }
+
+    executionTypes.forEach(radio => {
+        radio.addEventListener('change', updateSections);
+    });
+
+    // Initial setup
+    updateSections();
+});
+</script>
 {% endblock %}

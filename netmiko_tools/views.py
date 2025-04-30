@@ -1,69 +1,94 @@
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 import netmiko
 from django.contrib import messages
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404, render
 
 from .forms import CommandForm
 from .models import CommandHistory, NetworkDevice
 
 
+def execute_command_on_device(device, command, executed_by):
+    try:
+        with netmiko.ConnectHandler(
+            device_type=device.device_type,
+            ip=device.ip_address,
+            username=device.username,
+            password=device.password,
+            port=device.port,
+            secret=device.enable_password,
+        ) as net_connect:
+            output = net_connect.send_command(command)
+            status = "success"
+            return device, output, status
+    except Exception as e:
+        return device, str(e), "failed"
+
+
 def home(request):
     form = CommandForm()
-    latest_result = None
+    results = []
 
     if request.method == "POST":
         form = CommandForm(request.POST)
         if form.is_valid():
             command = form.cleaned_data["command"]
-            device = form.cleaned_data["device"]
-            try:
-                with netmiko.ConnectHandler(
-                    device_type=device.device_type,
-                    ip=device.ip_address,
-                    username=device.username,
-                    password=device.password,
-                    port=device.port,
-                    secret=device.enable_password,
-                ) as net_connect:
-                    output = net_connect.send_command(command)
-                    status = "success"
+            execution_type = form.cleaned_data["execution_type"]
+
+            if execution_type == "single":
+                device = form.cleaned_data["single_device"]
+                if device:
+                    device, output, status = execute_command_on_device(
+                        device, command, request.user.username
+                    )
+                    results.append(
+                        {"device": device, "status": status, "output": output}
+                    )
+            else:
+                devices = form.cleaned_data["multiple_devices"]
+                if devices:
+                    with ThreadPoolExecutor(max_workers=10) as executor:
+                        future_to_device = {
+                            executor.submit(
+                                execute_command_on_device,
+                                device,
+                                command,
+                                request.user.username,
+                            ): device
+                            for device in devices
+                        }
+
+                        for future in as_completed(future_to_device):
+                            device, output, status = future.result()
+                            results.append(
+                                {"device": device, "status": status, "output": output}
+                            )
+
+            # Save command history for all results
+            for result in results:
+                CommandHistory.objects.create(
+                    device=result["device"],
+                    command=command,
+                    output=result["output"],
+                    status=result["status"],
+                    executed_by=request.user.username,
+                )
+
+                if result["status"] == "success":
                     messages.success(
                         request,
-                        f"Command '{command}' executed successfully on {device.name}",
+                        f"Command executed successfully on {result['device'].name}",
                     )
-
-                history_object = CommandHistory.objects.create(
-                    device=device,
-                    command=command,
-                    output=output,
-                    status=status,
-                    executed_by="admin",  # Replace with actual user if auth is implemented
-                )
-                request.session["latest_history_id"] = history_object.id
-            except NetworkDevice.DoesNotExist:
-                messages.error(request, "Device not found.")
-            except Exception as e:
-                messages.error(request, f"Error executing command: {e}")
-                output = str(e)
-                status = "failed"
-                latest_result = None
-                if "latest_history_id" in request.session:
-                    del request.session["latest_history_id"]
-
-            return redirect("home")
-
-    if "latest_history_id" in request.session:
-        try:
-            latest_result = CommandHistory.objects.get(
-                id=request.session["latest_history_id"]
-            )
-        except CommandHistory.DoesNotExist:
-            latest_result = None
-        del request.session["latest_history_id"]
+                else:
+                    messages.error(
+                        request,
+                        f"Command failed on {result['device'].name}: {result['output']}",
+                    )
 
     return render(
         request,
         "netmiko_tools/index.html",
-        {"form": form, "latest_result": latest_result},
+        {"form": form, "results": results},
     )
 
 

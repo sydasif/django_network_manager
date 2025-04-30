@@ -1,0 +1,26 @@
+{% extends 'netmiko_tools/base.html' %}
+
+{% block content %}
+    <h1>Bulk Command Execution</h1>
+
+    <form method="post" class="mb-4">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Execute Command</button>
+    </form>
+
+    {% if results %}
+        <h2>Results</h2>
+        <div class="list-group">
+            {% for result in results %}
+                <div class="list-group-item {% if result.status == 'success' %}list-group-item-success{% else %}list-group-item-danger{% endif %}">
+                    <h5 class="mb-1">{{ result.device.name }} ({{ result.device.ip_address }})</h5>
+                    <p class="mb-1"><strong>Status:</strong> {{ result.status }}</p>
+                    <pre class="mt-2">{{ result.output }}</pre>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <a href="{% url 'home' %}" class="btn btn-secondary mt-3">Back to Home</a>
+{% endblock %}

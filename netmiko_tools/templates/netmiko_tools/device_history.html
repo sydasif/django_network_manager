@@ -1,36 +1,54 @@
 {% extends 'netmiko_tools/base.html' %}
 
 {% block content %}
-    <h1>Command History for {{ device.name }} ({{ device.ip_address }})</h1>
+<div class="container py-4">
+    <h1 class="mb-4">Device History: {{ device.name }}</h1>
+    <p class="text-muted mb-4">IP Address: {{ device.ip_address }}</p>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Command</th>
-                <th>Status</th>
-                <th>Output</th>
-                <th>Executed At</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for history in command_history %}
-            <tr>
-                <td>{{ history.command }}</td>
-                <td>
-                    <span class="badge {% if history.status == 'success' %}badge-success{% else %}badge-danger{% endif %}">
-                        {{ history.status }}
-                    </span>
-                </td>
-                <td><pre>{{ history.output }}</pre></td>
-                <td>{{ history.executed_at }}</td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="4">No command history available for this device.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="table-responsive">
+        <table class="table table-striped table-bordered history-table">
+            <thead class="thead-dark">
+                <tr>
+                    <th style="width: 20%">Command</th>
+                    <th style="width: 10%">Status</th>
+                    <th style="width: 55%">Output</th>
+                    <th style="width: 15%">Executed At</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for history in command_history %}
+                <tr>
+                    <td class="command-cell align-middle">
+                        <code>{{ history.command }}</code>
+                    </td>
+                    <td class="text-center align-middle">
+                        <span class="badge {% if history.status == 'success' %}badge-success{% else %}badge-danger{% endif %}">
+                            {{ history.status }}
+                        </span>
+                    </td>
+                    <td class="output-cell">
+                        <div class="output-wrapper">
+                            <div class="command-output">{{ history.output }}</div>
+                        </div>
+                    </td>
+                    <td class="executed-at align-middle text-center">
+                        <div class="date">{{ history.executed_at|date:"M d, Y" }}</div>
+                        <div class="time">{{ history.executed_at|time:"H:i:s" }}</div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center py-4">No command history available for this device.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 
-    <a href="{% url 'devices' %}" class="btn btn-secondary mt-3">Back to Device List</a>
+    <div class="mt-4">
+        <a href="{% url 'devices' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Device List
+        </a>
+    </div>
+</div>
 {% endblock %}

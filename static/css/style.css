@@ -1,26 +1,234 @@
+/* General styles */
 body {
-    font-family: sans-serif;
-    margin: 20px;
+    background-color: #f8f9fa;
 }
 
 .container {
-    max-width: 800px;
-    margin: 0 auto;
+    max-width: 1000px;
 }
 
-h1 {
-    color: #333;
+/* Form styles */
+.form-control {
+    border-radius: 0.25rem;
+    border: 1px solid #ced4da;
+    padding: 0.5rem 0.75rem;
 }
 
-h2 {
-    color: #666;
+.form-control:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
 }
 
-ul {
-    list-style-type: none;
-    padding: 0;
+/* Card styles */
+.card {
+    border: none;
+    border-radius: 0.5rem;
+    overflow: hidden;
 }
 
-li {
-    margin-bottom: 5px;
+.card-header {
+    padding: 1rem;
+    border-bottom: none;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+/* Button styles */
+.btn-group-toggle .btn {
+    min-width: 120px;
+}
+
+.btn-outline-primary:not(:disabled):not(.disabled).active {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+/* Results section */
+pre {
+    background-color: #f8f9fa;
+    border-radius: 0.25rem;
+    padding: 1rem;
+    margin: 0;
+    font-size: 0.9rem;
+    white-space: pre-wrap;
+}
+
+.accordion .card-header {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.accordion .card-header:hover {
+    filter: brightness(95%);
+}
+
+/* Select multiple styles */
+select[multiple] {
+    min-height: 150px;
+}
+
+/* Alert styles */
+.alert {
+    border: none;
+    border-radius: 0.25rem;
+    margin-bottom: 1rem;
+}
+
+.alert-dismissible .close {
+    padding: 0.75rem 1.25rem;
+}
+
+/* Command input styling */
+#id_command {
+    font-family: monospace;
+    font-size: 1rem;
+}
+
+/* Device select styling */
+#id_single_device, #id_multiple_devices {
+    width: 100%;
+    max-width: 100%;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .btn-group-toggle {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .btn-group-toggle .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+        border-radius: 0.25rem !important;
+    }
+}
+
+/* Device History Table Styles */
+.history-table {
+    table-layout: fixed;
+    margin-bottom: 2rem;
+    border: 1px solid #dee2e6;
+}
+
+.history-table th {
+    background-color: #343a40;
+    color: white;
+    font-weight: 500;
+    padding: 0.75rem;
+}
+
+.history-table td {
+    vertical-align: middle;
+    padding: 0.75rem;
+}
+
+.command-cell {
+    position: relative;
+}
+
+.command-cell code {
+    display: block;
+    font-family: 'Consolas', monospace;
+    background-color: #f8f9fa;
+    padding: 0.5rem;
+    border-radius: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.output-cell {
+    padding: 0 !important;
+    position: relative;
+}
+
+.output-wrapper {
+    position: relative;
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.command-output {
+    padding: 0.75rem;
+    margin: 0;
+    font-family: 'Consolas', monospace;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    white-space: pre;
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 150px;
+    width: 100%;
+    background: transparent;
+}
+
+.executed-at {
+    font-size: 0.9rem;
+}
+
+.executed-at .date {
+    font-weight: 500;
+    color: #495057;
+}
+
+.executed-at .time {
+    color: #6c757d;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+}
+
+.badge {
+    font-size: 85%;
+    padding: 0.4em 0.8em;
+    font-weight: 500;
+}
+
+.badge-success {
+    background-color: #28a745;
+}
+
+.badge-danger {
+    background-color: #dc3545;
+}
+
+/* Custom scrollbar styling */
+.command-output::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.command-output::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.command-output::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.command-output::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Make the table responsive on smaller screens */
+@media (max-width: 768px) {
+    .history-table {
+        table-layout: auto;
+    }
+
+    .command-cell code {
+        white-space: normal;
+        word-break: break-all;
+    }
+
+    .executed-at {
+        white-space: nowrap;
+    }
 }
