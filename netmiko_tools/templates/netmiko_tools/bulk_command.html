@@ -5,7 +5,32 @@
 
     <form method="post" class="mb-4">
         {% csrf_token %}
-        {{ form.as_p }}
+
+        <div class="mb-3">
+            <label class="form-label">Execution Type:</label><br>
+            {% for radio in form.execution_type %}
+                <div class="form-check form-check-inline">
+                    {{ radio }}
+                    <label class="form-check-label" for="{{ radio.id_for_label }}">{{ radio.choice_label }}</label>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="mb-3">
+            <label for="{{ form.multiple_devices.id_for_label }}" class="form-label">Select Devices:</label>
+            {{ form.multiple_devices|attr:'class=form-select' }}
+        </div>
+
+        <div class="mb-3">
+            <label for="{{ form.command.id_for_label }}" class="form-label">Command:</label>
+            {{ form.command|attr:'class=form-control' }}
+        </div>
+
+        <div class="mb-3">
+            <label for="{{ form.config_commands.id_for_label }}" class="form-label">Configuration Commands:</label>
+            {{ form.config_commands|attr:'class=form-control' }}
+        </div>
+
         <button type="submit" class="btn btn-primary">Execute Command</button>
     </form>
 
@@ -23,4 +48,28 @@
     {% endif %}
 
     <a href="{% url 'home' %}" class="btn btn-secondary mt-3">Back to Home</a>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const executionTypeRadios = document.querySelectorAll('input[name="execution_type"]');
+            const commandDiv = document.getElementById('id_command').parentNode;
+            const configCommandsDiv = document.getElementById('id_config_commands').parentNode;
+
+            function toggleCommandFields() {
+                if (document.querySelector('input[name="execution_type"][value="show_cmd"]').checked) {
+                    commandDiv.style.display = 'block';
+                    configCommandsDiv.style.display = 'none';
+                } else {
+                    commandDiv.style.display = 'none';
+                    configCommandsDiv.style.display = 'block';
+                }
+            }
+
+            executionTypeRadios.forEach(radio => {
+                radio.addEventListener('change', toggleCommandFields);
+            });
+
+            toggleCommandFields(); // Initial setup
+        });
+    </script>
 {% endblock %}
