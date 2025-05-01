@@ -24,7 +24,9 @@ class NetmikoCommandForm(forms.Form):
         widget=Textarea(attrs={"rows": 5, "cols": 40}),
         required=False,
     )
-    command = forms.CharField(label="Command", max_length=200)
+    command = forms.CharField(
+        label="Command", max_length=200, required=False
+    )  # Make command not required
     preset_command = forms.ChoiceField(
         label="Preset Command",
         choices=[
@@ -33,7 +35,10 @@ class NetmikoCommandForm(forms.Form):
             ("show running-config", "show running-config"),
             ("show version", "show version"),
             ("show inventory", "show inventory"),
-            ("show cdp neighbors detail", "show cdp neighbors detail"),
+            (
+                "show cdp neighbors detail",
+                "show cdp neighbors detail",
+            ),  # Corrected line
         ],
         required=False,
     )

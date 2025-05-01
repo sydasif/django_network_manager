@@ -112,13 +112,13 @@ document.addEventListener('DOMContentLoaded', function() {
         // Set all optional fields to not required initially
         document.querySelector('#id_multiple_devices').required = false;
         document.querySelector('#id_config_commands').required = false;
-        document.querySelector('#id_command').required = false;
+        //document.querySelector('#id_command').required = false; // Remove this line
 
         if (selectedValue === 'show_cmd') {
             multipleSection.style.display = 'block';
             commandSection.style.display = 'block';
             document.querySelector('#id_multiple_devices').required = true;
-            document.querySelector('#id_command').required = true;
+            //document.querySelector('#id_command').required = true; // Remove this line
         } else if (selectedValue === 'config_cmd') {
             multipleSection.style.display = 'block';
             configCommandsSection.style.display = 'block';
