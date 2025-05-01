@@ -9,9 +9,7 @@
         {% for message in messages %}
         <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %} alert-dismissible fade show">
             {{ message }}
-            <button type="button" class="close" data-dismiss="alert">
-                <span>&times;</span>
-            </button>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
         {% endfor %}
     </div>
@@ -26,37 +24,34 @@
                 {% csrf_token %}
 
                 <div class="form-group mb-4">
-                    <label class="d-block font-weight-bold mb-2">Select Mode:</label>
-                    <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                    <label class="d-block fw-bold mb-2">Select Mode:</label>
+                    <div class="btn-group" role="group" aria-label="Command Type">
                         {% for value, text in form.execution_type.field.choices %}
-                        <label class="btn btn-outline-primary {% if value == form.execution_type.field.initial %}active{% endif %}">
-                            <input type="radio" name="execution_type" value="{{ value }}" {% if value == form.execution_type.field.initial %}checked{% endif %}> {{ text }}
-                        </label>
+                        <input type="radio" class="btn-check" name="execution_type" value="{{ value }}" id="btn-{{ value }}" {% if value == form.execution_type.field.initial %}checked{% endif %}>
+                        <label class="btn btn-outline-primary" for="btn-{{ value }}">{{ text }}</label>
                         {% endfor %}
                     </div>
                 </div>
 
-                <!-- Removed single-device-section -->
-
-                <div id="multiple-devices-section" class="form-group" style="display: none;">
-                    <label class="font-weight-bold">Select Devices:</label>
+                <div id="multiple-devices-section" class="mb-3" style="display: none;">
+                    <label class="form-label fw-bold">Select Devices:</label>
                     {{ form.multiple_devices }}
-                    <small class="form-text text-muted">Hold Ctrl/Cmd to select multiple devices</small>
+                    <div class="form-text">Hold Ctrl/Cmd to select multiple devices</div>
                 </div>
 
-                <div id="config-commands-section" class="form-group" style="display: none;">
-                    <label class="font-weight-bold">Configuration Commands:</label>
+                <div id="config-commands-section" class="mb-3" style="display: none;">
+                    <label class="form-label fw-bold">Configuration Commands:</label>
                     {{ form.config_commands }}
-                    <small class="form-text text-muted">Enter each command on a new line.</small>
+                    <div class="form-text">Enter each command on a new line.</div>
                 </div>
 
-                <div class="form-group mt-4" id="command-section" style="display: none;">
-                    <label class="font-weight-bold">Command:</label>
+                <div class="mb-3" id="command-section" style="display: none;">
+                    <label class="form-label fw-bold">Command:</label>
                     {{ form.command }}
                 </div>
 
                 <div class="mt-4">
-                    <button type="submit" class="btn btn-primary btn-block py-2">Execute Command</button>
+                    <button type="submit" class="btn btn-primary w-100 py-2">Execute Command</button>
                 </div>
             </form>
         </div>
@@ -67,18 +62,18 @@
         <h4 class="mb-3">Results</h4>
         <div class="accordion" id="resultsAccordion">
             {% for result in results %}
-            <div class="card mb-2">
-                <div class="card-header {% if result.status == 'success' %}bg-success{% else %}bg-danger{% endif %} text-white">
-                    <div class="d-flex justify-content-between align-items-center"
-                         data-toggle="collapse"
-                         data-target="#collapse{{ forloop.counter }}"
-                         style="cursor: pointer;">
-                        <h6 class="mb-0">{{ result.device.name }} ({{ result.device.ip_address }})</h6>
-                        <span class="badge badge-light">{{ result.status }}</span>
-                    </div>
-                </div>
-                <div id="collapse{{ forloop.counter }}" class="collapse show" data-parent="#resultsAccordion">
-                    <div class="card-body bg-light">
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button {% if result.status != 'success' %}bg-danger text-white{% else %}bg-success text-white{% endif %}"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#collapse{{ forloop.counter }}">
+                        {{ result.device.name }} ({{ result.device.ip_address }})
+                        <span class="badge bg-light text-dark ms-2">{{ result.status }}</span>
+                    </button>
+                </h2>
+                <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse show" data-bs-parent="#resultsAccordion">
+                    <div class="accordion-body bg-light">
                         <pre class="mb-0">{{ result.output }}</pre>
                     </div>
                 </div>
@@ -92,7 +87,6 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const executionTypes = document.getElementsByName('execution_type');
-    // Removed singleSection reference
     const multipleSection = document.getElementById('multiple-devices-section');
     const configCommandsSection = document.getElementById('config-commands-section');
     const commandSection = document.querySelector('#command-section');
@@ -108,7 +102,6 @@ document.addEventListener('DOMContentLoaded', function() {
         document.querySelector('#id_multiple_devices').required = false;
         document.querySelector('#id_config_commands').required = false;
         document.querySelector('#id_command').required = false;
-
 
         if (selectedValue === 'show_cmd') {
             multipleSection.style.display = 'block';
