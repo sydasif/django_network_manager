@@ -34,20 +34,31 @@
                 </div>
 
                 <div id="multiple-devices-section" class="mb-3" style="display: none;">
-                    <label class="form-label fw-bold">Select Devices:</label>
-                    {{ form.multiple_devices }}
+                    <label for="{{ form.multiple_devices.id_for_label }}" class="form-label fw-bold">Select Devices:</label>
+                    <select class="form-select" id="{{ form.multiple_devices.id_for_label }}" name="{{ form.multiple_devices.name }}" multiple>
+                        {% for device in form.multiple_devices.field.queryset %}
+                        <option value="{{ device.pk }}">{{ device.name }} ({{ device.ip_address }})</option>
+                        {% endfor %}
+                    </select>
                     <div class="form-text">Hold Ctrl/Cmd to select multiple devices</div>
                 </div>
 
                 <div id="config-commands-section" class="mb-3" style="display: none;">
-                    <label class="form-label fw-bold">Configuration Commands:</label>
-                    {{ form.config_commands }}
+                    <label for="{{ form.config_commands.id_for_label }}" class="form-label fw-bold">Configuration Commands:</label>
+                    <textarea class="form-control" id="{{ form.config_commands.id_for_label }}" name="{{ form.config_commands.name }}" rows="5"></textarea>
                     <div class="form-text">Enter each command on a new line.</div>
                 </div>
 
                 <div class="mb-3" id="command-section" style="display: none;">
-                    <label class="form-label fw-bold">Command:</label>
-                    {{ form.command }}
+                    <label for="{{ form.preset_command.id_for_label }}" class="form-label fw-bold">Preset Command:</label>
+                    <select class="form-select" id="{{ form.preset_command.id_for_label }}" name="{{ form.preset_command.name }}">
+                        <option value="">--- Select a command ---</option>
+                        {% for value, text in form.preset_command.field.choices|slice:"1:" %}
+                        <option value="{{ value }}">{{ text }}</option>
+                        {% endfor %}
+                    </select>
+                    <label for="{{ form.command.id_for_label }}" class="form-label fw-bold">Command:</label>
+                    <input type="text" class="form-control" id="{{ form.command.id_for_label }}" name="{{ form.command.name }}">
                 </div>
 
                 <div class="mt-4">

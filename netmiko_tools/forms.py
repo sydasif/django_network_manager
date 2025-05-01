@@ -1,38 +1,39 @@
 from django import forms
+from django.forms import RadioSelect, Textarea
 
 from .models import NetworkDevice
 
 
-class CommandForm(forms.Form):
-    EXECUTION_TYPE = (
-        ("show_cmd", "Show Commands"),
-        ("config_cmd", "Configuration Commands"),
-    )
-
+class NetmikoCommandForm(forms.Form):
     execution_type = forms.ChoiceField(
-        choices=EXECUTION_TYPE,
-        widget=forms.RadioSelect(attrs={"class": "form-check-input"}),
-        initial="show_cmd",  # Updated initial value
+        label="Execution Type",
+        choices=[
+            ("show_cmd", "Show Commands"),
+            ("config_cmd", "Configuration Commands"),
+        ],
+        widget=RadioSelect,
+        initial="show_cmd",
     )
-
-    # Removed single_device field
-
     multiple_devices = forms.ModelMultipleChoiceField(
-        queryset=NetworkDevice.objects.filter(is_active=True),
-        label="Select Devices",
-        required=False,  # Requirement handled by JS based on mode
-        widget=forms.SelectMultiple(attrs={"class": "form-control"}),
+        queryset=NetworkDevice.objects.all(),
+        label="Devices",
+        required=False,
     )
-
-    command = forms.CharField(
-        label="Command",
-        max_length=200,
-        required=False,  # Requirement handled by JS based on mode
-        widget=forms.TextInput(attrs={"class": "form-control"}),
-    )
-
     config_commands = forms.CharField(
-        label="Configuration Commands",
-        required=False,  # Requirement handled by JS based on mode
-        widget=forms.Textarea(attrs={"class": "form-control", "rows": 5}),
+        label="Config Commands",
+        widget=Textarea(attrs={"rows": 5, "cols": 40}),
+        required=False,
+    )
+    command = forms.CharField(label="Command", max_length=200)
+    preset_command = forms.ChoiceField(
+        label="Preset Command",
+        choices=[
+            ("", "--- Select a command ---"),
+            ("show ip interface brief", "show ip interface brief"),
+            ("show running-config", "show running-config"),
+            ("show version", "show version"),
+            ("show inventory", "show inventory"),
+            ("show cdp neighbors detail", "show cdp neighbors detail"),
+        ],
+        required=False,
     )

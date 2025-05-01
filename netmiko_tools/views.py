@@ -4,7 +4,7 @@ import netmiko
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, render
 
-from .forms import CommandForm
+from .forms import NetmikoCommandForm  # Corrected import
 from .models import CommandHistory, NetworkDevice
 
 
@@ -45,18 +45,22 @@ def execute_config_commands_on_device(device, config_commands, executed_by):
 
 
 def home(request):
-    form = CommandForm()
+    form = NetmikoCommandForm()  # Use the correct form name
     results = []
 
     if request.method == "POST":
-        form = CommandForm(request.POST)
+        form = NetmikoCommandForm(request.POST)  # Use the correct form name
         if form.is_valid():
             command = form.cleaned_data.get("command")  # Use .get() as it might be None
+            preset_command = form.cleaned_data.get("preset_command")
             config_commands_raw = form.cleaned_data.get("config_commands")  # Use .get()
             execution_type = form.cleaned_data["execution_type"]
             devices = form.cleaned_data[
                 "multiple_devices"
             ]  # Always use multiple devices now
+
+            if preset_command:
+                command = preset_command
 
             if execution_type == "show_cmd":
                 if devices and command:  # Check if command is provided
