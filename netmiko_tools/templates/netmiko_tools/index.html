@@ -61,6 +61,15 @@
                     <input type="text" class="form-control" id="{{ form.command.id_for_label }}" name="{{ form.command.name }}">
                 </div>
 
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="{{ form.use_textfsm.id_for_label }}" name="{{ form.use_textfsm.name }}" {% if form.use_textfsm.value %}checked{% endif %}>
+                        <label class="form-check-label" for="{{ form.use_textfsm.id_for_label }}">
+                            Use TextFSM
+                        </label>
+                    </div>
+                </div>
+
                 <div class="mt-4">
                     <button type="submit" class="btn btn-primary w-100 py-2">Execute Command</button>
                 </div>

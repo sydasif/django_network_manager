@@ -1,4 +1,6 @@
+import io
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from pprint import pprint
 
 import netmiko
 from django.contrib import messages
@@ -8,7 +10,7 @@ from .forms import NetmikoCommandForm  # Corrected import
 from .models import CommandHistory, NetworkDevice
 
 
-def execute_command_on_device(device, command, executed_by):
+def execute_command_on_device(device, command, executed_by, use_textfsm=True):
     try:
         with netmiko.ConnectHandler(
             device_type=device.device_type,
@@ -18,7 +20,11 @@ def execute_command_on_device(device, command, executed_by):
             port=device.port,
             secret=device.enable_password,
         ) as net_connect:
-            output = net_connect.send_command(command)
+            output = net_connect.send_command(command, use_textfsm=use_textfsm)
+            if use_textfsm:
+                with io.StringIO() as buf:
+                    pprint(output, buf)
+                    output = buf.getvalue()
             status = "success"
             return device, output, status
     except Exception as e:
@@ -58,6 +64,7 @@ def home(request):
             devices = form.cleaned_data[
                 "multiple_devices"
             ]  # Always use multiple devices now
+            use_textfsm = form.cleaned_data["use_textfsm"]
 
             if preset_command:
                 command = preset_command
@@ -71,6 +78,7 @@ def home(request):
                                 device,
                                 command,
                                 request.user.username,
+                                use_textfsm,
                             ): device
                             for device in devices
                         }

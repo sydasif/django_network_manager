@@ -50,3 +50,4 @@ class NetmikoCommandForm(forms.Form):
         ],
         required=False,
     )
+    use_textfsm = forms.BooleanField(label="Use TextFSM", required=False, initial=True)
