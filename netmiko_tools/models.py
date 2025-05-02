@@ -45,9 +45,6 @@ class CommandHistory(models.Model):
     output = models.TextField(blank=True)
     status = models.CharField(max_length=20, default="success")
     executed_at = models.DateTimeField(default=timezone.now)
-    executed_by = models.CharField(
-        max_length=100
-    )  # Can be linked to User model later if needed
 
     def __str__(self):
         return f"{self.device.name} - {self.command[:50]}"

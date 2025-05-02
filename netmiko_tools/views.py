@@ -10,7 +10,7 @@ from .forms import NetmikoCommandForm  # Corrected import
 from .models import CommandHistory, NetworkDevice
 
 
-def execute_command_on_device(device, command, executed_by, use_textfsm=True):
+def execute_command_on_device(device, command, use_textfsm=True):
     try:
         with netmiko.ConnectHandler(
             device_type=device.device_type,
@@ -31,7 +31,7 @@ def execute_command_on_device(device, command, executed_by, use_textfsm=True):
         return device, str(e), "failed"
 
 
-def execute_config_commands_on_device(device, config_commands, executed_by):
+def execute_config_commands_on_device(device, config_commands):
     try:
         with netmiko.ConnectHandler(
             device_type=device.device_type,
@@ -77,7 +77,6 @@ def home(request):
                                 execute_command_on_device,
                                 device,
                                 command,
-                                request.user.username,
                                 use_textfsm,
                             ): device
                             for device in devices
@@ -94,7 +93,6 @@ def home(request):
                                 command=command,
                                 output=output,
                                 status=status,
-                                executed_by=request.user.username,
                             )
                 elif not command:
                     messages.error(
@@ -114,7 +112,6 @@ def home(request):
                                 execute_config_commands_on_device,
                                 device,
                                 config_commands,
-                                request.user.username,
                             ): device
                             for device in devices
                         }
