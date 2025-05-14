@@ -51,20 +51,18 @@ def execute_config_commands_on_device(device, config_commands):
 
 
 def home(request):
-    form = NetmikoCommandForm()  # Use the correct form name
     results = []
 
     if request.method == "POST":
-        form = NetmikoCommandForm(request.POST)  # Use the correct form name
+        form = NetmikoCommandForm(request.POST)
         if form.is_valid():
-            command = form.cleaned_data.get("command")  # Use .get() as it might be None
-            preset_command = form.cleaned_data.get("preset_command")
-            config_commands_raw = form.cleaned_data.get("config_commands")  # Use .get()
+            # Get form data
+            command = form.cleaned_data.get("command", "")
+            preset_command = form.cleaned_data.get("preset_command", "")
+            config_commands_raw = form.cleaned_data.get("config_commands", "")
             execution_type = form.cleaned_data["execution_type"]
-            devices = form.cleaned_data[
-                "multiple_devices"
-            ]  # Always use multiple devices now
-            use_textfsm = form.cleaned_data["use_textfsm"]
+            devices = form.cleaned_data.get("multiple_devices", [])
+            use_textfsm = form.cleaned_data.get("use_textfsm", True)
 
             if preset_command:
                 command = preset_command
@@ -122,36 +120,33 @@ def home(request):
                                 {"device": device, "status": status, "output": output}
                             )
                             # Save history inside the loop for config_cmd
-                            # Store the raw commands string for history
                             CommandHistory.objects.create(
                                 device=device,
                                 command=config_commands_raw,  # Save the multi-line string
                                 output=output,
                                 status=status,
-                                executed_by=request.user.username,
                             )
                 elif not config_commands_raw:
                     messages.error(request, "Please enter configuration commands.")
                 elif not devices:
                     messages.error(request, "Please select at least one device.")
 
-            # Display messages based on results (moved outside history saving)
+            # Display messages based on results
             for result in results:
                 if result["status"] == "success":
                     messages.success(
-                        request,
-                        f"Operation successful on {result['device'].name}",
+                        request, f"Operation successful on {result['device'].name}"
                     )
                 else:
                     messages.error(
                         request,
                         f"Operation failed on {result['device'].name}: {result['output']}",
                     )
+    else:
+        form = NetmikoCommandForm()
 
     return render(
-        request,
-        "netmiko_tools/index.html",
-        {"form": form, "results": results},
+        request, "netmiko_tools/index.html", {"form": form, "results": results}
     )
 
 

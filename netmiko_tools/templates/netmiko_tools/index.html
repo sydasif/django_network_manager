@@ -19,8 +19,7 @@
         <div class="card-header bg-primary text-white">
             <h5 class="mb-0">Execute Command</h5>
         </div>
-        <div class="card-body">
-            <form method="post" action="{% url 'home' %}">
+        <div class="card-body">            <form method="post">
                 {% csrf_token %}
 
                 <div class="form-group mb-4">

@@ -1,10 +1,111 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Nornir Tools</title>
-</head>
-<body>
-    <h1>Welcome to Nornir Tools</h1>
-    <p>This is a placeholder for the Nornir tools interface.</p>
-</body>
-</html>
+{% extends 'netmiko_tools/base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <h1 class="text-primary mb-4">Nornir Network Manager</h1>
+
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Execute Commands</h5>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Command Type:</label>
+                    <div class="btn-group" role="group">
+                        {{ form.command_type }}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Select Devices:</label>
+                    {{ form.devices }}
+                    <div class="form-text">Hold Ctrl/Cmd to select multiple devices</div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Commands:</label>
+                    {{ form.command }}
+                    <div class="form-text">Enter each command on a new line</div>
+                </div>
+
+                <div class="mb-4">
+                    <div class="form-check">
+                        {{ form.parallel_execution }}
+                        <label class="form-check-label" for="{{ form.parallel_execution.id_for_label }}">
+                            Execute in Parallel
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Execute Commands</button>
+            </form>
+        </div>
+    </div>
+
+    {% if results %}
+    <div class="mt-4">
+        <h4 class="mb-3">Results</h4>
+        <div class="accordion" id="resultsAccordion">
+            {% for command, result in results.items %}
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                            data-bs-target="#collapse{{ forloop.counter }}">
+                        {{ command }}
+                    </button>
+                </h2>
+                <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse show"
+                     data-bs-parent="#resultsAccordion">
+                    <div class="accordion-body">
+                        <pre class="bg-light p-3 rounded"><code>{{ result }}</code></pre>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const commandTypeInputs = document.querySelectorAll('input[name="command_type"]');
+    const commandTextarea = document.querySelector('#{{ form.command.id_for_label }}');
+
+    function updateCommandPlaceholder() {
+        const selectedType = document.querySelector('input[name="command_type"]:checked').value;
+        if (selectedType === 'show') {
+            commandTextarea.placeholder = 'Enter show commands (one per line)\nExample:\nshow ip interface brief\nshow version';
+        } else if (selectedType === 'config') {
+            commandTextarea.placeholder = 'Enter configuration commands (one per line)\nExample:\ninterface GigabitEthernet0/1\n description Main Link\n no shutdown';
+        } else if (selectedType === 'backup') {
+            commandTextarea.disabled = true;
+            commandTextarea.placeholder = 'Backup configuration - no commands needed';
+        } else if (selectedType === 'validate') {
+            commandTextarea.placeholder = 'Enter validation commands (one per line)';
+        }
+    }
+
+    commandTypeInputs.forEach(input => {
+        input.addEventListener('change', updateCommandPlaceholder);
+    });
+
+    // Initial setup
+    updateCommandPlaceholder();
+});
+</script>
+{% endblock %}
