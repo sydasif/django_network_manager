@@ -28,10 +28,13 @@
             <form method="post">
                 {% csrf_token %}
 
-                <div class="mb-4">
-                    <label class="form-label fw-bold">Command Type:</label>
-                    <div class="btn-group" role="group">
-                        {{ form.command_type }}
+                <div class="form-group mb-4">
+                    <label class="d-block fw-bold mb-2">{{ form.command_type.label }}</label>
+                    <div class="btn-group" role="group" aria-label="Command Type">
+                        {% for value, text in form.command_type.field.choices %}
+                        <input type="radio" class="btn-check" name="{{ form.command_type.name }}" value="{{ value }}" id="btn-{{ value }}" {% if value == form.command_type.value %}checked{% endif %}>
+                        <label class="btn btn-outline-primary" for="btn-{{ value }}">{{ text }}</label>
+                        {% endfor %}
                     </div>
                 </div>
 
@@ -71,51 +74,22 @@
     <div class="mt-4">
         <h4 class="mb-3">Results</h4>
         <div class="accordion" id="resultsAccordion">
-            {% for command, result in results.items %}
+            {% for device, result in results.items %}
             <div class="accordion-item">
                 <h2 class="accordion-header">
                     <button class="accordion-button" type="button" data-bs-toggle="collapse"
-                            data-bs-target="#collapse{{ forloop.counter }}">
-                        {{ command }}
+                            data-bs-target="#collapse{{ forloop.counter }}"
+                            aria-expanded="false" aria-controls="collapse{{ forloop.counter }}">
+                        {{ device }}
                     </button>
                 </h2>
-                <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse show"
-                     data-bs-parent="#resultsAccordion">
-                    <div class="accordion-body">
-                        <pre class="bg-light p-3 rounded"><code>{{ result }}</code></pre>
+                <div id="collapse{{ forloop.counter }}" class="accordion-collapse collapse show" data-bs-parent="#resultsAccordion">
+                    <div class="accordion-body bg-light">
+                        <pre class="mb-0">{{ result }}</pre>
                     </div>
-                    {% for device in devices %}
-                    <a href="{% url 'nornir_tools:nornir_device_history' device.id %}" class="btn btn-sm btn-info">View History for {{ device.name }}</a>
-                    {% endfor %}
                 </div>
             </div>
             {% endfor %}
-        </div>
-    </div>
-    {% endif %}
-
-    {% if nornir_history %}
-    <div class="mt-4">
-        <h4 class="mb-3">Command History</h4>
-        <div class="table-responsive">
-            <table class="table table-striped table-bordered">
-                <thead>
-                    <tr>
-                        <th>Device</th>
-                        <th>Command</th>
-                        <th>Executed At</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for history in nornir_history %}
-                    <tr>
-                        <td>{{ history.device.name }}</td>
-                        <td>{{ history.command }}</td>
-                        <td>{{ history.executed_at }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
         </div>
     </div>
     {% endif %}

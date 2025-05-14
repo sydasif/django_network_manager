@@ -42,8 +42,6 @@ def nornir_home(request):
             except Exception as e:
                 messages.error(request, f"Error executing commands: {str(e)}")
 
-    # Get recent command history
-    nornir_history = NornirCommandHistory.objects.all().order_by("-executed_at")[:5]
     devices = NetworkDevice.objects.filter(is_active=True)
 
     return render(
@@ -52,7 +50,6 @@ def nornir_home(request):
         {
             "form": form,
             "results": results,
-            "nornir_history": nornir_history,
             "devices": devices,
         },
     )

@@ -11,6 +11,7 @@ class NornirCommandForm(forms.Form):
     )
 
     command_type = forms.ChoiceField(
+        label="Select Mode:",
         choices=[
             ("show", "Show Commands"),
             ("config", "Configuration Commands"),
