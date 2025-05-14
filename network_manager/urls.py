@@ -20,9 +20,13 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
+from core import views
+
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", include("netmiko_tools.urls")),
+    path("netmiko/", include("netmiko_tools.urls")),
+    path("nornir/", include("nornir_tools.urls")),
+    path("", views.home, name="home"),
 ]
 
 if settings.DEBUG:

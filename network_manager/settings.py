@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "netmiko_tools",  # Add our custom app
+    "core",
+    "nornir_tools",  # Add nornir tools app
 ]
 
 MIDDLEWARE = [
