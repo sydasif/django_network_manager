@@ -2,7 +2,12 @@
 
 {% block content %}
 <div class="container py-4">
-    <h1 class="mb-4 text-primary">Network Command Center</h1>
+    <div class="d-flex justify-content-between align-items-center">
+        <h1 class="mb-4 text-primary">Netmiko Command Center</h1>
+        <a href="{% url 'core:index' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Home
+        </a>
+    </div>
 
     {% if messages %}
     <div class="messages mb-4">
