@@ -47,6 +47,7 @@
                     <div class="form-text">Hold Ctrl/Cmd to select multiple devices</div>
                 </div>
 
+
                 <div class="mb-3">
                     <label for="{{ form.device_groups.id_for_label }}" class="form-label fw-bold">Select Device Groups:</label>
                     <select class="form-select" id="{{ form.device_groups.id_for_label }}" name="{{ form.device_groups.name }}" multiple>
@@ -124,9 +125,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const multipleSection = document.getElementById('multiple-devices-section');
     const configCommandsSection = document.getElementById('config-commands-section');
     const commandSection = document.querySelector('#command-section');
+    const deviceGroupsSelect = document.getElementById('id_device_groups');
 
     function updateSections() {
         const selectedValue = document.querySelector('input[name="execution_type"]:checked').value;
+        const deviceGroupSelected = deviceGroupsSelect.selectedOptions.length > 0;
 
         // Hide all optional sections initially
         multipleSection.style.display = 'none';
@@ -140,12 +143,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (selectedValue === 'show_cmd') {
             multipleSection.style.display = 'block';
             commandSection.style.display = 'block';
-            document.querySelector('#id_multiple_devices').required = true;
+            document.querySelector('#id_multiple_devices').required = !deviceGroupSelected;
             //document.querySelector('#id_command').required = true; // Remove this line
         } else if (selectedValue === 'config_cmd') {
             multipleSection.style.display = 'block';
             configCommandsSection.style.display = 'block';
-            document.querySelector('#id_multiple_devices').required = true;
+            document.querySelector('#id_multiple_devices').required = !deviceGroupSelected;
             document.querySelector('#id_config_commands').required = true;
         }
     }
@@ -153,6 +156,8 @@ document.addEventListener('DOMContentLoaded', function() {
     executionTypes.forEach(radio => {
         radio.addEventListener('change', updateSections);
     });
+
+    deviceGroupsSelect.addEventListener('change', updateSections);
 
     // Initial setup
     updateSections();

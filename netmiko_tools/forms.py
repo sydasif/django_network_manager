@@ -2,6 +2,7 @@ from django import forms
 from django.forms import RadioSelect, Textarea
 
 from .models import NetworkDevice
+from core.models import DeviceGroup
 
 
 class NetmikoCommandForm(forms.Form):
@@ -17,6 +18,11 @@ class NetmikoCommandForm(forms.Form):
     multiple_devices = forms.ModelMultipleChoiceField(
         queryset=NetworkDevice.objects.all(),
         label="Devices",
+        required=False,
+    )
+    device_groups = forms.ModelMultipleChoiceField(
+        queryset=DeviceGroup.objects.all(),
+        label="Device Groups",
         required=False,
     )
     config_commands = forms.CharField(
