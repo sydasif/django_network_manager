@@ -18,16 +18,23 @@ Including another URLconf
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
+from django.shortcuts import redirect
 from django.urls import include, path
 
-from core import views
+
+def redirect_to_core(request):
+    return redirect("core:index")
+
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("netmiko/", include("netmiko_tools.urls")),
-    path("nornir/", include("nornir_tools.urls")),
-    path("", views.home, name="home"),
+    path("", include("core.urls")),  # Core app as the central hub
+    path("netmiko/", include("netmiko_tools.urls")),  # Netmiko tools under /netmiko/
+    path("nornir/", include("nornir_tools.urls")),  # Nornir tools under /nornir/
+    path("api-auth/", include("rest_framework.urls")),  # DRF authentication
 ]
 
+# Serve static and media files in development
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,21 +1,6 @@
 from django.contrib import admin
 
-from .models import CommandHistory, NetworkDevice
-
-
-@admin.register(NetworkDevice)
-class NetworkDeviceAdmin(admin.ModelAdmin):
-    list_display = (
-        "name",
-        "ip_address",
-        "device_type",
-        "port",
-        "is_active",
-        "created_at",
-    )
-    list_filter = ("device_type", "is_active")
-    search_fields = ("name", "ip_address", "description")
-    ordering = ("name",)
+from .models import CommandHistory
 
 
 @admin.register(CommandHistory)

@@ -1,13 +1,92 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Network Manager</title>
-</head>
-<body>
-    <h1>Welcome to the Network Manager</h1>
-    <ul>
-        <li><a href="{% url 'netmiko_tools:home' %}">Netmiko Tools</a></li>
-        <li><a href="{% url 'nornir_tools:nornir_home' %}">Nornir Tools</a></li>
-    </ul>
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block title %}Django Network Manager{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Network Device Manager Dashboard</h1>
+
+    <div class="row">
+        <!-- Device Statistics -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Device Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6 text-center">
+                            <h3>{{ devices_count }}</h3>
+                            <p>Total Devices</p>
+                        </div>
+                        <div class="col-6 text-center">
+                            <h3>{{ active_devices_count }}</h3>
+                            <p>Active Devices</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'admin:core_networkdevice_changelist' %}" class="btn btn-sm btn-primary">Manage Devices</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Group Statistics -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">Device Groups</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12 text-center">
+                            <h3>{{ groups_count }}</h3>
+                            <p>Total Groups</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'admin:core_devicegroup_changelist' %}" class="btn btn-sm btn-success">Manage Groups</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Command Templates -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">Command Templates</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-12 text-center">
+                            <h3>{{ templates_count }}</h3>
+                            <p>Available Templates</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'admin:core_commandtemplate_changelist' %}" class="btn btn-sm btn-info">Manage Templates</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="card-title mb-0">Quick Links</h5>
+                </div>
+                <div class="card-body">                    <div class="list-group">
+                        <a href="{% url 'netmiko_tools:home' %}" class="list-group-item list-group-item-action">Netmiko Tools</a>
+                        <a href="{% url 'nornir_tools:nornir_home' %}" class="list-group-item list-group-item-action">Nornir Tools</a>
+                        <a href="/admin/" class="list-group-item list-group-item-action">Admin Interface</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
