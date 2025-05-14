@@ -47,6 +47,16 @@
                     <div class="form-text">Hold Ctrl/Cmd to select multiple devices</div>
                 </div>
 
+                <div class="mb-3">
+                    <label for="{{ form.device_groups.id_for_label }}" class="form-label fw-bold">Select Device Groups:</label>
+                    <select class="form-select" id="{{ form.device_groups.id_for_label }}" name="{{ form.device_groups.name }}" multiple>
+                        {% for group in form.device_groups.field.queryset %}
+                        <option value="{{ group.pk }}">{{ group.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="form-text">Hold Ctrl/Cmd to select multiple device groups</div>
+                </div>
+
                 <div id="config-commands-section" class="mb-3" style="display: none;">
                     <label for="{{ form.config_commands.id_for_label }}" class="form-label fw-bold">Configuration Commands:</label>
                     <textarea class="form-control" id="{{ form.config_commands.id_for_label }}" name="{{ form.config_commands.name }}" rows="5"></textarea>

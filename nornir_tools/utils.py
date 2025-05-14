@@ -3,7 +3,8 @@ from typing import Any, Dict, List
 from nornir import InitNornir
 from nornir_netmiko.tasks import netmiko_send_command, netmiko_send_config
 
-from netmiko_tools.models import CommandHistory, NetworkDevice
+from .models import NornirCommandHistory
+from netmiko_tools.models import NetworkDevice
 
 
 def create_nornir_inventory() -> Dict[str, Any]:
@@ -127,7 +128,7 @@ def run_commands(
                 # Save failed command history
                 for host, error in failures.items():
                     device = NetworkDevice.objects.get(name=host)
-                    CommandHistory.objects.create(
+                    NornirCommandHistory.objects.create(
                         device=device, command=command, output=error, status="failed"
                     )
             else:
@@ -140,7 +141,7 @@ def run_commands(
                 # Save successful command history
                 for host, output in outputs.items():
                     device = NetworkDevice.objects.get(name=host)
-                    CommandHistory.objects.create(
+                    NornirCommandHistory.objects.create(
                         device=device, command=command, output=output, status="success"
                     )
         except Exception as e:
@@ -180,7 +181,7 @@ def run_config_commands(
             # Save failed command history
             for host, error in failures.items():
                 device = NetworkDevice.objects.get(name=host)
-                CommandHistory.objects.create(
+                NornirCommandHistory.objects.create(
                     device=device,
                     command="\n".join(config_commands),
                     output=error,
@@ -194,7 +195,7 @@ def run_config_commands(
             # Save successful command history for each device
             for host, output in outputs.items():
                 device = NetworkDevice.objects.get(name=host)
-                CommandHistory.objects.create(
+                NornirCommandHistory.objects.create(
                     device=device,
                     command="\n".join(config_commands),
                     output=output or "Configuration applied successfully",
@@ -233,7 +234,7 @@ def backup_config(devices: List[str], parallel: bool = True) -> Dict:
             # Save failed command history
             for host, error in failures.items():
                 device = NetworkDevice.objects.get(name=host)
-                CommandHistory.objects.create(
+                NornirCommandHistory.objects.create(
                     device=device,
                     command="show running-config",
                     output=error,
@@ -247,7 +248,7 @@ def backup_config(devices: List[str], parallel: bool = True) -> Dict:
             # Save successful command history for each device
             for host, output in outputs.items():
                 device = NetworkDevice.objects.get(name=host)
-                CommandHistory.objects.create(
+                NornirCommandHistory.objects.create(
                     device=device,
                     command="show running-config",
                     output=output,

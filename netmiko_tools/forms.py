@@ -45,7 +45,6 @@ class NetmikoCommandForm(forms.Form):
             ("show spanning-tree", "show spanning-tree"),
             ("show startup-config", "show startup-config"),
             ("show users", "show users"),
-            ("show version", "show version"),
             ("show vlan", "show vlan"),
         ],
         required=False,

@@ -9,6 +9,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from .models import CommandTemplate, DeviceGroup, NetworkDevice
+from netmiko_tools.models import CommandHistory
+from nornir_tools.models import NornirCommandHistory
 
 
 class NetworkDeviceSerializer(serializers.ModelSerializer):
@@ -75,11 +77,23 @@ def index(request):
     groups = DeviceGroup.objects.all()
     templates = CommandTemplate.objects.all()
 
+    # Get recent command history
+    netmiko_history = CommandHistory.objects.all().order_by("-executed_at")[:5]
+    nornir_history = NornirCommandHistory.objects.all().order_by("-executed_at")[:5]
+
+    # Combine and sort the history
+    command_history = sorted(
+        list(netmiko_history) + list(nornir_history),
+        key=lambda x: x.executed_at,
+        reverse=True,
+    )[:10]
+
     context = {
         "devices_count": devices.count(),
         "active_devices_count": devices.filter(is_active=True).count(),
         "groups_count": groups.count(),
         "templates_count": templates.count(),
+        "command_history": command_history,
     }
     return render(request, "core/index.html", context)
 

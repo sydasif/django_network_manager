@@ -1,7 +1,9 @@
 from django.contrib import messages
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 
 from .forms import NornirCommandForm
+from .models import NornirCommandHistory
+from core.models import NetworkDevice
 from .utils import backup_config, run_commands, run_config_commands
 
 
@@ -40,6 +42,38 @@ def nornir_home(request):
             except Exception as e:
                 messages.error(request, f"Error executing commands: {str(e)}")
 
+    # Get recent command history
+    nornir_history = NornirCommandHistory.objects.all().order_by("-executed_at")[:5]
+    devices = NetworkDevice.objects.filter(is_active=True)
+
     return render(
-        request, "nornir_tools/index.html", {"form": form, "results": results}
+        request,
+        "nornir_tools/index.html",
+        {
+            "form": form,
+            "results": results,
+            "nornir_history": nornir_history,
+            "devices": devices,
+        },
+    )
+
+
+def devices(request):
+    devices = NetworkDevice.objects.all()
+    return render(
+        request,
+        "nornir_tools/devices.html",
+        {"devices": devices},
+    )
+
+
+def nornir_device_history(request, device_id):
+    device = get_object_or_404(NetworkDevice, pk=device_id)
+    command_history = NornirCommandHistory.objects.filter(device=device).order_by(
+        "-executed_at"
+    )
+    return render(
+        request,
+        "nornir_tools/nornir_device_history.html",
+        {"device": device, "command_history": command_history},
     )

@@ -61,14 +61,19 @@ def home(request):
             preset_command = form.cleaned_data.get("preset_command", "")
             config_commands_raw = form.cleaned_data.get("config_commands", "")
             execution_type = form.cleaned_data["execution_type"]
-            devices = form.cleaned_data.get("multiple_devices", [])
             use_textfsm = form.cleaned_data.get("use_textfsm", True)
 
-            if preset_command:
-                command = preset_command
+            # Filter devices based on selected device groups
+            devices = form.cleaned_data.get("multiple_devices", [])
 
             if execution_type == "show_cmd":
-                if devices and command:  # Check if command is provided
+                if not command:
+                    messages.error(
+                        request, "Please enter a command for Show Commands mode."
+                    )
+                elif not devices:
+                    messages.error(request, "Please select at least one device.")
+                else:
                     with ThreadPoolExecutor(max_workers=10) as executor:
                         future_to_device = {
                             executor.submit(
@@ -92,12 +97,6 @@ def home(request):
                                 output=output,
                                 status=status,
                             )
-                elif not command:
-                    messages.error(
-                        request, "Please enter a command for Show Commands mode."
-                    )
-                elif not devices:
-                    messages.error(request, "Please select at least one device.")
 
             elif execution_type == "config_cmd":
                 if (

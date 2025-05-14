@@ -1,0 +1,29 @@
+{% extends 'nornir_tools/base.html' %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="text-primary mb-0">Network Devices</h1>
+        <a href="{% url 'nornir_tools:nornir_home' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Home
+        </a>
+    </div>
+
+    <div class="list-group shadow-sm">
+        {% for device in devices %}
+        <a href="{% url 'nornir_tools:nornir_device_history' device_id=device.id %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="mb-1">{{ device.name }}</h5>
+                <p class="mb-0 text-muted">{{ device.ip_address }}</p>
+            </div>
+            <i class="fas fa-chevron-right text-muted"></i>
+        </a>
+        {% empty %}
+        <div class="list-group-item text-center py-4">
+            <i class="fas fa-info-circle mb-2 text-muted fa-2x"></i>
+            <p class="mb-0">No devices configured yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -4,7 +4,7 @@ from nornir_tools.utils import backup_config, run_commands, run_config_commands
 def test_show_commands():
     """Test running show commands"""
     devices = ["Sw_01"]  # Replace with your device name
-    commands = ["show version", "show ip interface brief"]
+    commands = ["show running-config", "show ip interface brief"]
     result = run_commands(devices, commands, parallel=False)
     print("\n=== Show Commands Test ===")
     print("Commands:", commands)

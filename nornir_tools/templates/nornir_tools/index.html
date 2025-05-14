@@ -1,4 +1,4 @@
-{% extends 'netmiko_tools/base.html' %}
+{% extends 'nornir_tools/base.html' %}
 
 {% block content %}
 <div class="container py-4">
@@ -42,6 +42,12 @@
                 </div>
 
                 <div class="mb-3">
+                    <label class="form-label fw-bold">Select Device Groups:</label>
+                    {{ form.device_groups }}
+                    <div class="form-text">Hold Ctrl/Cmd to select multiple device groups</div>
+                </div>
+
+                <div class="mb-3">
                     <label class="form-label fw-bold">Commands:</label>
                     {{ form.command }}
                     <div class="form-text">Enter each command on a new line</div>
@@ -78,9 +84,38 @@
                     <div class="accordion-body">
                         <pre class="bg-light p-3 rounded"><code>{{ result }}</code></pre>
                     </div>
+                    {% for device in devices %}
+                    <a href="{% url 'nornir_tools:nornir_device_history' device.id %}" class="btn btn-sm btn-info">View History for {{ device.name }}</a>
+                    {% endfor %}
                 </div>
             </div>
             {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if nornir_history %}
+    <div class="mt-4">
+        <h4 class="mb-3">Command History</h4>
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>Device</th>
+                        <th>Command</th>
+                        <th>Executed At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for history in nornir_history %}
+                    <tr>
+                        <td>{{ history.device.name }}</td>
+                        <td>{{ history.command }}</td>
+                        <td>{{ history.executed_at }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
     {% endif %}
@@ -94,7 +129,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateCommandPlaceholder() {
         const selectedType = document.querySelector('input[name="command_type"]:checked').value;
         if (selectedType === 'show') {
-            commandTextarea.placeholder = 'Enter show commands (one per line)\nExample:\nshow ip interface brief\nshow version';
+            commandTextarea.placeholder = 'Enter show commands (one per line)\nExample:\nshow ip interface brief\nshow running-config';
         } else if (selectedType === 'config') {
             commandTextarea.placeholder = 'Enter configuration commands (one per line)\nExample:\ninterface GigabitEthernet0/1\n description Main Link\n no shutdown';
         } else if (selectedType === 'backup') {
