@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - Django Network Manager{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/d3@7.8.5/dist/d3.min.css" rel="stylesheet">
+<style>
+:root {
+    --primary-bg: #ffffff;
+    --secondary-bg: #f8f9fa;
+    --text-color: #212529;
+    --border-color: #dee2e6;
+}
+
+[data-theme="dark"] {
+    --primary-bg: #212529;
+    --secondary-bg: #343a40;
+    --text-color: #f8f9fa;
+    --border-color: #495057;
+}
+
+body {
+    background-color: var(--primary-bg);
+    color: var(--text-color);
+}
+
+.card {
+    background-color: var(--secondary-bg);
+    border-color: var(--border-color);
+}
+
+.stats-card {
+    transition: transform 0.3s;
+}
+
+.stats-card:hover {
+    transform: translateY(-5px);
+}
+
+.network-map {
+    width: 100%;
+    height: 400px;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+}
+
+.theme-switch {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Theme Switch Button -->
+    <button class="btn btn-outline-primary theme-switch" onclick="toggleTheme()">
+        <i class="fas fa-moon"></i>
+    </button>
+
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card stats-card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-server fa-2x mb-3 text-primary"></i>
+                    <h5 class="card-title">Total Devices</h5>
+                    <h2 class="mb-0">{{ device_count }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-check-circle fa-2x mb-3 text-success"></i>
+                    <h5 class="card-title">Online Devices</h5>
+                    <h2 class="mb-0">{{ online_count }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-users fa-2x mb-3 text-info"></i>
+                    <h5 class="card-title">Device Groups</h5>
+                    <h2 class="mb-0">{{ group_count }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stats-card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-terminal fa-2x mb-3 text-warning"></i>
+                    <h5 class="card-title">Command Templates</h5>
+                    <h2 class="mb-0">{{ template_count }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/d3@7.8.5/dist/d3.min.js"></script>
+<script>
+// Theme switching functionality
+function toggleTheme() {
+    const body = document.body;
+    const themeButton = document.querySelector('.theme-switch i');
+
+    if (body.getAttribute('data-theme') === 'dark') {
+        body.removeAttribute('data-theme');
+        themeButton.classList.replace('fa-sun', 'fa-moon');
+    } else {
+        body.setAttribute('data-theme', 'dark');
+        themeButton.classList.replace('fa-moon', 'fa-sun');
+    }
+}
+</script>
+</script>
+{% endblock %}

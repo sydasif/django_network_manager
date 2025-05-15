@@ -1,6 +1,28 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
+from django.utils.translation import gettext_lazy as _
+from .models import User, NetworkDevice, DeviceGroup, CommandTemplate, DevicePermission, AuditLog
 
-from .models import CommandTemplate, DeviceGroup, NetworkDevice
+@admin.register(User)
+class CustomUserAdmin(UserAdmin):
+    list_display = ('username', 'email', 'role', 'is_active', 'date_joined', 'last_login')
+    list_filter = ('role', 'is_active', 'groups')
+    fieldsets = (
+        (None, {'fields': ('username', 'password')}),
+        (_('Personal info'), {'fields': ('first_name', 'last_name', 'email')}),
+        (_('Permissions'), {
+            'fields': ('role', 'is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions'),
+        }),
+        (_('Important dates'), {'fields': ('last_login', 'date_joined', 'last_login_ip')}),
+    )
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('username', 'email', 'password1', 'password2', 'role'),
+        }),
+    )
+    search_fields = ('username', 'first_name', 'last_name', 'email')
+    ordering = ('username',)
 
 
 @admin.register(NetworkDevice)
@@ -59,3 +81,26 @@ class CommandTemplateAdmin(admin.ModelAdmin):
         ("Template Content", {"fields": ["template"]}),
         ("Metadata", {"fields": ["created_at", "updated_at"]}),
     ]
+
+@admin.register(DevicePermission)
+class DevicePermissionAdmin(admin.ModelAdmin):
+    list_display = ['user', 'device', 'can_view', 'can_edit', 'can_delete']
+    list_filter = ['can_view', 'can_edit', 'can_delete']
+    search_fields = ['user__username', 'device__name']
+    readonly_fields = ['created_at', 'updated_at']
+
+@admin.register(AuditLog)
+class AuditLogAdmin(admin.ModelAdmin):
+    list_display = ['timestamp', 'user', 'action', 'device', 'ip_address']
+    list_filter = ['action', 'timestamp']
+    search_fields = ['user__username', 'device__name', 'action', 'ip_address']
+    readonly_fields = ['timestamp', 'user', 'action', 'device', 'details', 'ip_address']
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False

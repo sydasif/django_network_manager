@@ -8,9 +8,10 @@ from rest_framework import permissions, serializers, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from .models import CommandTemplate, DeviceGroup, NetworkDevice
 from netmiko_tools.models import CommandHistory
 from nornir_tools.models import NornirCommandHistory
+
+from .models import CommandTemplate, DeviceGroup, NetworkDevice
 
 
 class NetworkDeviceSerializer(serializers.ModelSerializer):
@@ -89,13 +90,13 @@ def index(request):
     )[:10]
 
     context = {
-        "devices_count": devices.count(),
-        "active_devices_count": devices.filter(is_active=True).count(),
-        "groups_count": groups.count(),
-        "templates_count": templates.count(),
+        "device_count": devices.count(),
+        "online_count": devices.filter(is_active=True).count(),
+        "group_count": groups.count(),
+        "template_count": templates.count(),
         "command_history": command_history,
     }
-    return render(request, "core/index.html", context)
+    return render(request, "core/dashboard.html", context)
 
 
 def login_view(request):
