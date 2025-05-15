@@ -32,6 +32,7 @@ body {
 
 .stats-card {
     transition: transform 0.3s;
+    cursor: pointer;
 }
 
 .stats-card:hover {
@@ -64,7 +65,7 @@ body {
     <!-- Statistics Cards -->
     <div class="row g-4 mb-4">
         <div class="col-md-3">
-            <a href="{% url 'core:device_list' %}" style="text-decoration: none; color: inherit;">
+            <a href="{% url 'core:device_list' %}" class="text-decoration-none">
                 <div class="card stats-card h-100">
                     <div class="card-body text-center">
                         <i class="fas fa-server fa-2x mb-3 text-primary"></i>
@@ -75,7 +76,7 @@ body {
             </a>
         </div>
         <div class="col-md-3">
-            <a href="{% url 'core:device_list' %}" style="text-decoration: none; color: inherit;">
+            <a href="{% url 'core:device_list' %}?status=active" class="text-decoration-none">
                 <div class="card stats-card h-100">
                     <div class="card-body text-center">
                         <i class="fas fa-check-circle fa-2x mb-3 text-success"></i>
@@ -86,7 +87,7 @@ body {
             </a>
         </div>
         <div class="col-md-3">
-            <a href="{% url 'core:group_list' %}" style="text-decoration: none; color: inherit;">
+            <a href="{% url 'core:group_list' %}" class="text-decoration-none">
                 <div class="card stats-card h-100">
                     <div class="card-body text-center">
                         <i class="fas fa-users fa-2x mb-3 text-info"></i>
@@ -97,7 +98,7 @@ body {
             </a>
         </div>
         <div class="col-md-3">
-            <a href="{% url 'core:template_list' %}" style="text-decoration: none; color: inherit;">
+            <a href="{% url 'core:template_list' %}" class="text-decoration-none">
                 <div class="card stats-card h-100">
                     <div class="card-body text-center">
                         <i class="fas fa-terminal fa-2x mb-3 text-warning"></i>
@@ -108,8 +109,7 @@ body {
             </a>
         </div>
     </div>
-
-    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
@@ -128,6 +128,5 @@ function toggleTheme() {
         themeButton.classList.replace('fa-moon', 'fa-sun');
     }
 }
-</script>
 </script>
 {% endblock %}

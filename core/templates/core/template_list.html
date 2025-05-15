@@ -1,15 +1,111 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Command Template List - Django Network Manager{% endblock %}
+{% block title %}Command Templates - Django Network Manager{% endblock %}
 
 {% block content %}
 <div class="container py-4">
-    <h2>Command Template List</h2>
-    <ul class="list-group">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Command Templates</h2>
+        <a href="{% url 'core:index' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+    </div>
+
+    <div class="list-group">
         {% for template in templates %}
-            <li class="list-group-item">{{ template.name }}</li>
+            <div class="list-group-item template-item" data-template-id="{{ template.id }}">
+                <div class="d-flex justify-content-between align-items-center cursor-pointer" style="cursor: pointer" role="button">
+                    <div>
+                        <h5 class="mb-1">{{ template.name }}</h5>
+                        <small class="text-muted">{{ template.command_type }}</small>
+                    </div>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="template-details mt-3" style="display: none;">
+                    <!-- Details will be loaded here -->
+                </div>
+            </div>
+        {% empty %}
+            <div class="text-center p-4 text-muted">
+                <i class="fas fa-info-circle fa-2x mb-3"></i>
+                <p class="mb-0">No command templates found</p>
+            </div>
         {% endfor %}
-    </ul>
+    </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const templateItems = document.querySelectorAll('.template-item');
+
+    templateItems.forEach(item => {
+        const header = item.querySelector('.d-flex');
+        const details = item.querySelector('.template-details');
+        const icon = header.querySelector('.fas');
+        let detailsLoaded = false;
+
+        header.addEventListener('click', async function() {
+            if (!detailsLoaded) {
+                const templateId = item.getAttribute('data-template-id');
+                details.innerHTML = `
+                    <div class="text-center p-3">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                `;
+                details.style.display = 'block';
+                icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
+
+                try {
+                    const response = await fetch(`/api/templates/${templateId}/`);
+                    if (!response.ok) throw new Error('Failed to fetch template details');
+                    const template = await response.json();
+
+                    details.innerHTML = `
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <strong>Description:</strong>
+                                    <p class="mb-2">${template.description || 'No description available'}</p>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Command Type:</strong>
+                                    <span class="badge bg-info">${template.command_type}</span>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Template Content:</strong>
+                                    <pre class="mt-2 p-3 bg-light rounded"><code>${template.template}</code></pre>
+                                </div>
+                                <div class="mb-0">
+                                    <strong>Last Updated:</strong> ${new Date(template.updated_at).toLocaleString()}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    detailsLoaded = true;
+                } catch (error) {
+                    details.innerHTML = `
+                        <div class="alert alert-danger" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            Error loading template details. Please try again.
+                        </div>
+                    `;
+                }
+            } else {
+                if (details.style.display === 'none') {
+                    details.style.display = 'block';
+                    icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
+                } else {
+                    details.style.display = 'none';
+                    icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+                }
+            }
+        });
+    });
+});
+</script>
 {% endblock %}

@@ -1,15 +1,126 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Device Group List - Django Network Manager{% endblock %}
+{% block title %}Device Groups - Django Network Manager{% endblock %}
 
 {% block content %}
 <div class="container py-4">
-    <h2>Device Group List</h2>
-    <ul class="list-group">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Device Groups</h2>
+        <a href="{% url 'core:index' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+    </div>
+
+    <div class="list-group">
         {% for group in groups %}
-            <li class="list-group-item">{{ group.name }}</li>
+            <div class="list-group-item group-item" data-group-id="{{ group.id }}">
+                <div class="d-flex justify-content-between align-items-center cursor-pointer" style="cursor: pointer" role="button">
+                    <div>
+                        <h5 class="mb-1">{{ group.name }}</h5>
+                        <small class="text-muted">{{ group.devices.count }} devices</small>
+                    </div>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="group-details mt-3" style="display: none;">
+                    <!-- Details will be loaded here -->
+                </div>
+            </div>
+        {% empty %}
+            <div class="text-center p-4 text-muted">
+                <i class="fas fa-info-circle fa-2x mb-3"></i>
+                <p class="mb-0">No device groups found</p>
+            </div>
         {% endfor %}
-    </ul>
+    </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const groupItems = document.querySelectorAll('.group-item');
+
+    groupItems.forEach(item => {
+        const header = item.querySelector('.d-flex');
+        const details = item.querySelector('.group-details');
+        const icon = header.querySelector('.fas');
+        let detailsLoaded = false;
+
+        header.addEventListener('click', async function() {
+            if (!detailsLoaded) {
+                const groupId = item.getAttribute('data-group-id');
+                details.innerHTML = `
+                    <div class="text-center p-3">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                `;
+                details.style.display = 'block';
+                icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
+
+                try {
+                    const response = await fetch(`/api/groups/${groupId}/`);
+                    if (!response.ok) throw new Error('Failed to fetch group details');
+                    const group = await response.json();
+
+                    // Fetch devices in this group
+                    const devicesResponse = await fetch(`/api/groups/${groupId}/devices/`);
+                    if (!devicesResponse.ok) throw new Error('Failed to fetch group devices');
+                    const devices = await devicesResponse.json();
+
+                    details.innerHTML = `
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <strong>Description:</strong>
+                                    <p class="mb-2">${group.description || 'No description available'}</p>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Devices in Group:</strong>
+                                    <div class="list-group mt-2">
+                                        ${devices.map(device => `
+                                            <div class="list-group-item">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <h6 class="mb-0">${device.name}</h6>
+                                                        <small class="text-muted">${device.ip_address}</small>
+                                                    </div>
+                                                    <span class="badge bg-${device.is_active ? 'success' : 'danger'} rounded-pill">
+                                                        ${device.is_active ? 'Online' : 'Offline'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        `).join('') || '<p class="text-muted mb-0">No devices in this group</p>'}
+                                    </div>
+                                </div>
+                                <div class="mb-0">
+                                    <strong>Last Updated:</strong> ${new Date(group.updated_at).toLocaleString()}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    detailsLoaded = true;
+                } catch (error) {
+                    details.innerHTML = `
+                        <div class="alert alert-danger" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            Error loading group details. Please try again.
+                        </div>
+                    `;
+                }
+            } else {
+                if (details.style.display === 'none') {
+                    details.style.display = 'block';
+                    icon.classList.replace('fa-chevron-down', 'fa-chevron-up');
+                } else {
+                    details.style.display = 'none';
+                    icon.classList.replace('fa-chevron-up', 'fa-chevron-down');
+                }
+            }
+        });
+    });
+});
+</script>
 {% endblock %}

@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 
 # Create serializers for the API
 from rest_framework import permissions, serializers, viewsets
@@ -164,8 +164,18 @@ class CommandTemplateViewSet(viewsets.ModelViewSet):
 
 @login_required
 def device_list(request):
+    # Filter devices based on status parameter
+    status = request.GET.get("status")
     devices = NetworkDevice.objects.all()
-    return render(request, "core/device_list.html", {"devices": devices})
+
+    if status == "active":
+        devices = devices.filter(is_active=True)
+
+    return render(
+        request,
+        "core/device_list.html",
+        {"devices": devices, "is_active_filter": status == "active"},
+    )
 
 
 @login_required
@@ -178,3 +188,32 @@ def group_list(request):
 def template_list(request):
     templates = CommandTemplate.objects.all()
     return render(request, "core/template_list.html", {"templates": templates})
+
+
+@login_required
+def device_detail(request, device_id):
+    device = get_object_or_404(NetworkDevice, pk=device_id)
+
+    # Get command history for this device
+    netmiko_history = CommandHistory.objects.filter(device=device).order_by(
+        "-executed_at"
+    )[:5]
+    nornir_history = NornirCommandHistory.objects.filter(device=device).order_by(
+        "-executed_at"
+    )[:5]
+
+    # Combine and sort the history
+    command_history = sorted(
+        list(netmiko_history) + list(nornir_history),
+        key=lambda x: x.executed_at,
+        reverse=True,
+    )[:10]
+
+    return render(
+        request,
+        "core/device_detail.html",
+        {
+            "device": device,
+            "command_history": command_history,
+        },
+    )

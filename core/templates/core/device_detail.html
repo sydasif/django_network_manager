@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ device.name }} - Django Network Manager{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">{{ device.name }}</h2>
+            <div class="d-flex align-items-center">
+                <span class="text-muted me-3">{{ device.ip_address }}</span>
+                <span class="badge bg-{{ device.is_active|yesno:'success,danger' }} rounded-pill">
+                    {{ device.is_active|yesno:'Online,Offline' }}
+                </span>
+            </div>
+        </div>
+        <a href="{% url 'core:device_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Devices
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Device Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Device Type:</strong>
+                        <p class="mb-0">{{ device.device_type }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Port:</strong>
+                        <p class="mb-0">{{ device.port }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <strong>Description:</strong>
+                        <p class="mb-0">{{ device.description|default:'No description available' }}</p>
+                    </div>
+                    <div class="mb-0">
+                        <strong>Last Updated:</strong>
+                        <p class="mb-0">{{ device.updated_at|date:"Y-m-d H:i:s" }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Recent Command History</h5>
+                </div>
+                <div class="card-body">
+                    {% if command_history %}
+                        <div class="list-group">
+                            {% for history in command_history %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="mb-1">{{ history.command }}</h6>
+                                            <small class="text-muted">{{ history.executed_at|date:"Y-m-d H:i:s" }}</small>
+                                        </div>
+                                        <span class="badge bg-{{ history.status|yesno:'success,danger' }} rounded-pill">
+                                            {{ history.status|default:'Unknown' }}
+                                        </span>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">No command history available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Device Groups</h5>
+                </div>
+                <div class="card-body">
+                    {% if device.groups.exists %}
+                        <div class="list-group">
+                            {% for group in device.groups.all %}
+                                <a href="{% url 'core:group_list' %}" class="list-group-item list-group-item-action">
+                                    {{ group.name }}
+                                </a>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted mb-0">Device is not part of any groups.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'netmiko_tools:device_history' device.id %}" class="btn btn-outline-primary">
+                            <i class="fas fa-history me-2"></i>Full Command History
+                        </a>
+                        <a href="{% url 'admin:core_networkdevice_change' device.id %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-edit me-2"></i>Edit Device
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
