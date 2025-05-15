@@ -1,11 +1,16 @@
 from django import forms
 from django.forms import RadioSelect, Textarea
 
-from .models import NetworkDevice
 from core.models import DeviceGroup
+
+from .models import NetworkDevice
 
 
 class NetmikoCommandForm(forms.Form):
+    """
+    Form for executing Netmiko commands.
+    """
+
     execution_type = forms.ChoiceField(
         label="Execution Type",
         choices=[

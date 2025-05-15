@@ -1,9 +1,14 @@
 from django.db import models
 from django.utils import timezone
+
 from core.models import NetworkDevice  # Import NetworkDevice from core app
 
 
 class CommandHistory(models.Model):
+    """
+    Model representing a command execution history.
+    """
+
     device = models.ForeignKey(
         NetworkDevice, on_delete=models.CASCADE, related_name="command_history"
     )
@@ -13,6 +18,9 @@ class CommandHistory(models.Model):
     executed_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
+        """
+        Returns a string representation of the command history.
+        """
         return f"{self.device.name} - {self.command[:50]}"
 
     class Meta:

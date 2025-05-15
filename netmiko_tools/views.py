@@ -11,6 +11,9 @@ from .models import CommandHistory, NetworkDevice
 
 
 def execute_command_on_device(device, command, use_textfsm=True):
+    """
+    Executes a single command on a network device using Netmiko.
+    """
     try:
         with netmiko.ConnectHandler(
             device_type=device.device_type,
@@ -32,6 +35,9 @@ def execute_command_on_device(device, command, use_textfsm=True):
 
 
 def execute_config_commands_on_device(device, config_commands):
+    """
+    Executes configuration commands on a network device using Netmiko.
+    """
     try:
         with netmiko.ConnectHandler(
             device_type=device.device_type,
@@ -51,6 +57,9 @@ def execute_config_commands_on_device(device, config_commands):
 
 
 def home(request):
+    """
+    Handles the main view for executing commands on network devices.
+    """
     results = []
 
     if request.method == "POST":
@@ -171,6 +180,9 @@ def home(request):
 
 
 def devices(request):
+    """
+    Displays a list of network devices.
+    """
     devices = NetworkDevice.objects.all()
     return render(
         request,
@@ -180,6 +192,9 @@ def devices(request):
 
 
 def device_history(request, device_id):
+    """
+    Displays the command history for a specific network device.
+    """
     device = get_object_or_404(NetworkDevice, pk=device_id)
     command_history = CommandHistory.objects.filter(device=device).order_by(
         "-executed_at"
