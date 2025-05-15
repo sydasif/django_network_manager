@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Device Group List - Django Network Manager{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h2>Device Group List</h2>
+    <ul class="list-group">
+        {% for group in groups %}
+            <li class="list-group-item">{{ group.name }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

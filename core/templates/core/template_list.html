@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Command Template List - Django Network Manager{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <h2>Command Template List</h2>
+    <ul class="list-group">
+        {% for template in templates %}
+            <li class="list-group-item">{{ template.name }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

@@ -160,3 +160,21 @@ class CommandTemplateViewSet(viewsets.ModelViewSet):
 
 
 # Create views for the web interface
+
+
+@login_required
+def device_list(request):
+    devices = NetworkDevice.objects.all()
+    return render(request, "core/device_list.html", {"devices": devices})
+
+
+@login_required
+def group_list(request):
+    groups = DeviceGroup.objects.all()
+    return render(request, "core/group_list.html", {"groups": groups})
+
+
+@login_required
+def template_list(request):
+    templates = CommandTemplate.objects.all()
+    return render(request, "core/template_list.html", {"templates": templates})

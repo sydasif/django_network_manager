@@ -64,40 +64,48 @@ body {
     <!-- Statistics Cards -->
     <div class="row g-4 mb-4">
         <div class="col-md-3">
-            <div class="card stats-card h-100">
-                <div class="card-body text-center">
-                    <i class="fas fa-server fa-2x mb-3 text-primary"></i>
-                    <h5 class="card-title">Total Devices</h5>
-                    <h2 class="mb-0">{{ device_count }}</h2>
+            <a href="{% url 'core:device_list' %}" style="text-decoration: none; color: inherit;">
+                <div class="card stats-card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-server fa-2x mb-3 text-primary"></i>
+                        <h5 class="card-title">Total Devices</h5>
+                        <h2 class="mb-0">{{ device_count }}</h2>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-md-3">
-            <div class="card stats-card h-100">
-                <div class="card-body text-center">
-                    <i class="fas fa-check-circle fa-2x mb-3 text-success"></i>
-                    <h5 class="card-title">Online Devices</h5>
-                    <h2 class="mb-0">{{ online_count }}</h2>
+            <a href="{% url 'core:device_list' %}" style="text-decoration: none; color: inherit;">
+                <div class="card stats-card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-check-circle fa-2x mb-3 text-success"></i>
+                        <h5 class="card-title">Online Devices</h5>
+                        <h2 class="mb-0">{{ online_count }}</h2>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-md-3">
-            <div class="card stats-card h-100">
-                <div class="card-body text-center">
-                    <i class="fas fa-users fa-2x mb-3 text-info"></i>
-                    <h5 class="card-title">Device Groups</h5>
-                    <h2 class="mb-0">{{ group_count }}</h2>
+            <a href="{% url 'core:group_list' %}" style="text-decoration: none; color: inherit;">
+                <div class="card stats-card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-users fa-2x mb-3 text-info"></i>
+                        <h5 class="card-title">Device Groups</h5>
+                        <h2 class="mb-0">{{ group_count }}</h2>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-md-3">
-            <div class="card stats-card h-100">
-                <div class="card-body text-center">
-                    <i class="fas fa-terminal fa-2x mb-3 text-warning"></i>
-                    <h5 class="card-title">Command Templates</h5>
-                    <h2 class="mb-0">{{ template_count }}</h2>
+            <a href="{% url 'core:template_list' %}" style="text-decoration: none; color: inherit;">
+                <div class="card stats-card h-100">
+                    <div class="card-body text-center">
+                        <i class="fas fa-terminal fa-2x mb-3 text-warning"></i>
+                        <h5 class="card-title">Command Templates</h5>
+                        <h2 class="mb-0">{{ template_count }}</h2>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
     </div>
 
