@@ -1,9 +1,6 @@
 from django.contrib import admin
-from .models import NetworkDevice, DeviceGroup, CommandTemplate
 
-
-from django.urls import reverse
-from django.utils.html import format_html
+from .models import CommandTemplate, DeviceGroup, NetworkDevice
 
 
 @admin.register(NetworkDevice)
@@ -13,7 +10,6 @@ class NetworkDeviceAdmin(admin.ModelAdmin):
         "ip_address",
         "device_type",
         "is_active",
-        "nornir_history_link",
     ]
     list_filter = ["device_type", "is_active"]
     search_fields = ["name", "ip_address", "description"]
@@ -37,12 +33,6 @@ class NetworkDeviceAdmin(admin.ModelAdmin):
         ),
         ("Metadata", {"fields": ["created_at", "updated_at"]}),
     ]
-
-    def nornir_history_link(self, obj):
-        url = reverse("nornir_tools:nornir_device_history", args=[obj.id])
-        return format_html('<a href="{}">Nornir History</a>', url)
-
-    nornir_history_link.short_description = "Nornir History"
 
 
 @admin.register(DeviceGroup)

@@ -8,7 +8,6 @@ from django.shortcuts import get_object_or_404, render
 
 from .forms import NetmikoCommandForm  # Corrected import
 from .models import CommandHistory, NetworkDevice
-from core.models import DeviceGroup
 
 
 def execute_command_on_device(device, command, use_textfsm=True):
@@ -115,7 +114,7 @@ def home(request):
                                 # Save history inside the loop for show_cmd
                                 CommandHistory.objects.create(
                                     device=device,
-                                    command=command,
+                                    command=command_to_execute,
                                     output=output,
                                     status=status,
                                 )
