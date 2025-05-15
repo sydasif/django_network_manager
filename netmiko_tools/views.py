@@ -5,9 +5,55 @@ from pprint import pprint
 import netmiko
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, render
+from netmiko.exceptions import NetmikoAuthenticationException, NetmikoTimeoutException
 
 from .forms import NetmikoCommandForm  # Corrected import
 from .models import CommandHistory, NetworkDevice
+
+
+def process_command_form(request):
+    """
+    Processes the Netmiko command form and returns the cleaned data.
+    """
+    form = NetmikoCommandForm(request.POST)
+    if form.is_valid():
+        return form.cleaned_data, None  # Return cleaned data, no error
+    else:
+        return None, form  # Return None for cleaned data, and the form with errors
+
+
+def get_unique_devices(selected_devices, selected_groups):
+    """
+    Combines devices from selected groups and individual devices, and removes duplicates.
+    """
+    devices = []
+    if selected_groups:
+        for group in selected_groups:
+            devices.extend(group.devices.all())
+    if selected_devices:
+        devices.extend(selected_devices)
+
+    # Remove duplicates
+    return list(set(devices))
+
+
+def prepare_execution_details(cleaned_data):
+    """
+    Prepares the command or config commands to be executed based on the form data.
+    """
+    command = cleaned_data.get("command", "")
+    preset_command = cleaned_data.get("preset_command", "")
+    config_commands_raw = cleaned_data.get("config_commands", "")
+    execution_type = cleaned_data["execution_type"]
+    use_textfsm = cleaned_data.get("use_textfsm", True)
+
+    if execution_type == "show_cmd":
+        command_to_execute = command or preset_command
+        return command_to_execute, execution_type, use_textfsm, config_commands_raw
+    elif execution_type == "config_cmd":
+        return config_commands_raw, execution_type, use_textfsm, command
+    else:
+        return None, None, None, None
 
 
 def execute_command_on_device(device, command, use_textfsm=True):
@@ -30,7 +76,13 @@ def execute_command_on_device(device, command, use_textfsm=True):
                     output = buf.getvalue()
             status = "success"
             return device, output, status
+    except NetmikoTimeoutException:
+        return device, "Timeout occurred. Check device connectivity.", "failed"
+    except NetmikoAuthenticationException:
+        return device, "Authentication failure. Check username and password.", "failed"
     except Exception as e:
+        # Log the exception if logging is configured
+        # logger.error(f"Error executing command on {device.name}: {e}")
         return device, str(e), "failed"
 
 
@@ -53,6 +105,16 @@ def execute_config_commands_on_device(device, config_commands):
             status = "success"
             return device, output, status
     except Exception as e:
+        # Log the exception if logging is configured
+        # logger.error(f"Error executing config commands on {device.name}: {e}")
+        return device, str(e), "failed"
+    except NetmikoTimeoutException:
+        return device, "Timeout occurred. Check device connectivity.", "failed"
+    except NetmikoAuthenticationException:
+        return device, "Authentication failure. Check username and password.", "failed"
+    except Exception as e:
+        # Log the exception if logging is configured
+        # logger.error(f"Error executing config commands on {device.name}: {e}")
         return device, str(e), "failed"
 
 
@@ -60,119 +122,126 @@ def home(request):
     """
     Handles the main view for executing commands on network devices.
     """
+    """
+    Handles the main view for executing commands on network devices.
+    """
     results = []
+    form = NetmikoCommandForm()  # Initialize form for GET requests
 
     if request.method == "POST":
-        form = NetmikoCommandForm(request.POST)
+        form = NetmikoCommandForm(request.POST)  # Bind form with POST data
         if form.is_valid():
-            # Get form data
-            command = form.cleaned_data.get("command", "")
-            preset_command = form.cleaned_data.get("preset_command", "")
-            config_commands_raw = form.cleaned_data.get("config_commands", "")
-            execution_type = form.cleaned_data["execution_type"]
-            use_textfsm = form.cleaned_data.get("use_textfsm", True)
+            try:
+                cleaned_data = form.cleaned_data
 
-            # Get selected devices and device groups
-            selected_devices = form.cleaned_data.get("multiple_devices", [])
-            selected_groups = form.cleaned_data.get("device_groups", [])
+                # Get selected devices and device groups
+                selected_devices = cleaned_data.get("multiple_devices", [])
+                selected_groups = cleaned_data.get("device_groups", [])
 
-            # Combine devices from selected groups and individual devices
-            devices = []
-            if selected_groups:
-                for group in selected_groups:
-                    devices.extend(group.devices.all())
-            if selected_devices:
-                devices.extend(selected_devices)
+                devices = get_unique_devices(selected_devices, selected_groups)
 
-            # Remove duplicates
-            devices = list(set(devices))
+                if not devices:
+                    messages.error(
+                        request, "Please select at least one device or device group."
+                    )
+                else:
+                    (
+                        command_to_execute,
+                        execution_type,
+                        use_textfsm,
+                        config_commands_raw,
+                    ) = prepare_execution_details(cleaned_data)
 
-            if not devices:
-                messages.error(
-                    request, "Please select at least one device or device group."
-                )
-            else:
-                if execution_type == "show_cmd":
-                    command_to_execute = command or preset_command
-                    if not command_to_execute:
-                        messages.error(
-                            request,
-                            "Please enter a command or select a preset command for Show Commands mode.",
-                        )
-                    else:
-                        with ThreadPoolExecutor(max_workers=10) as executor:
-                            future_to_device = {
-                                executor.submit(
-                                    execute_command_on_device,
-                                    device,
-                                    command_to_execute,
-                                    use_textfsm,
-                                ): device
-                                for device in devices
-                            }
+                    if execution_type == "show_cmd":
+                        if not command_to_execute:
+                            messages.error(
+                                request,
+                                "Please enter a command or select a preset command for Show Commands mode.",
+                            )
+                        else:
+                            with ThreadPoolExecutor(max_workers=10) as executor:
+                                future_to_device = {
+                                    executor.submit(
+                                        execute_command_on_device,
+                                        device,
+                                        command_to_execute,
+                                        use_textfsm,
+                                    ): device
+                                    for device in devices
+                                }
 
-                            for future in as_completed(future_to_device):
-                                device, output, status = future.result()
-                                results.append(
-                                    {
-                                        "device": device,
-                                        "status": status,
-                                        "output": output,
-                                    }
-                                )
-                                # Save history inside the loop for show_cmd
-                                CommandHistory.objects.create(
-                                    device=device,
-                                    command=command_to_execute,
-                                    output=output,
-                                    status=status,
-                                )
+                                for future in as_completed(future_to_device):
+                                    device, output, status = future.result()
+                                    results.append(
+                                        {
+                                            "device": device,
+                                            "status": status,
+                                            "output": output,
+                                        }
+                                    )
+                                    # Save history inside the loop for show_cmd
+                                    CommandHistory.objects.create(
+                                        device=device,
+                                        command=command_to_execute,
+                                        output=output,
+                                        status=status,
+                                    )
 
-                elif execution_type == "config_cmd":
-                    if config_commands_raw:  # Check if config commands are provided
-                        config_commands = config_commands_raw.splitlines()
-                        with ThreadPoolExecutor(max_workers=10) as executor:
-                            future_to_device = {
-                                executor.submit(
-                                    execute_config_commands_on_device,
-                                    device,
-                                    config_commands,
-                                ): device
-                                for device in devices
-                            }
+                    elif execution_type == "config_cmd":
+                        if config_commands_raw:  # Check if config commands are provided
+                            config_commands = config_commands_raw.splitlines()
+                            with ThreadPoolExecutor(max_workers=10) as executor:
+                                future_to_device = {
+                                    executor.submit(
+                                        execute_config_commands_on_device,
+                                        device,
+                                        config_commands,
+                                    ): device
+                                    for device in devices
+                                }
 
-                            for future in as_completed(future_to_device):
-                                device, output, status = future.result()
-                                results.append(
-                                    {
-                                        "device": device,
-                                        "status": status,
-                                        "output": output,
-                                    }
-                                )
-                                # Save history inside the loop for config_cmd
-                                CommandHistory.objects.create(
-                                    device=device,
-                                    command=config_commands_raw,  # Save the multi-line string
-                                    output=output,
-                                    status=status,
-                                )
-                    else:
-                        messages.error(request, "Please enter configuration commands.")
+                                for future in as_completed(future_to_device):
+                                    device, output, status = future.result()
+                                    results.append(
+                                        {
+                                            "device": device,
+                                            "status": status,
+                                            "output": output,
+                                        }
+                                    )
+                                    # Save history inside the loop for config_cmd
+                                    CommandHistory.objects.create(
+                                        device=device,
+                                        command=config_commands_raw,  # Save the multi-line string
+                                        output=output,
+                                        status=status,
+                                    )
+                        else:
+                            messages.error(
+                                request, "Please enter configuration commands."
+                            )
 
-                # Display messages based on results
-                for result in results:
-                    if result["status"] == "success":
-                        messages.success(
-                            request, f"Operation successful on {result['device'].name}"
-                        )
-                    else:
-                        messages.error(
-                            request,
-                            f"Operation failed on {result['device'].name}: {result['output']}",
-                        )
-    else:
-        form = NetmikoCommandForm()
+                    # Display messages based on results
+                    for result in results:
+                        if result["status"] == "success":
+                            messages.success(
+                                request,
+                                f"Operation successful on {result['device'].name}",
+                            )
+                        else:
+                            messages.error(
+                                request,
+                                f"Operation failed on {result['device'].name}: {result['output']}",
+                            )
+            except Exception as e:
+                messages.error(request, f"An unexpected error occurred: {e}")
+                # Log the exception if logging is configured
+                # logger.error(f"An unexpected error occurred: {e}")
+                # Ensure results is empty and form is the bound form with errors
+                results = []
+        # If form is not valid, the form variable already holds the form with errors
+
+    # For GET requests, form is already initialized at the beginning
 
     return render(
         request, "netmiko_tools/index.html", {"form": form, "results": results}
